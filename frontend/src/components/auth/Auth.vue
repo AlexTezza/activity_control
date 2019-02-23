@@ -5,11 +5,15 @@
             <hr>
             <div class="auth-title">{{ showSignup ? 'Cadastro' : 'Login' }}</div>
 
-            <input v-if="showSignup" v-model="usuario.nome" placeholder="Nome">
-            <input v-model="usuario.email" name="email" type="text" placeholder="E-mail">
-            <input v-model="usuario.senha" name="senha" type="password" placeholder="Senha">
+            <input v-if="showSignup" v-model="usuario.nome" placeholder="Nome" 
+                v-on:keyup.enter="onEnter">
+            <input v-model="usuario.email" name="email" type="text" placeholder="E-mail"
+                v-on:keyup.enter="onEnter">
+            <input v-model="usuario.senha" name="senha" type="password" placeholder="Senha"
+                v-on:keyup.enter="onEnter">
             <input v-if="showSignup" v-model="usuario.confirmacaoSenha"
-                type="password" placeholder="Confirme a Senha">
+                type="password" placeholder="Confirme a Senha"
+                v-on:keyup.enter="onEnter">
 
             <button v-if="showSignup" @click="signup">Registrar</button>
             <button v-else @click="signin">Entrar</button>
@@ -52,6 +56,9 @@ export default {
                     this.showSignup = false
                 })
                 .catch(showError)
+        },
+        onEnter: function() {
+            this.showSignup ? this.signup() : this.signin()
         }
     }
 
