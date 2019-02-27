@@ -101,13 +101,18 @@ import PageTitle from '../template/PageTitle'
 import { baseApiUrl, showError, userKey } from '@/global'
 import axios from 'axios'
 
+const today = new Date()
+const day = today.getDate()
+const month = today.getMonth() + 1
+const year = today.getFullYear()
+
 const initialAtividade = {
     descricao: "",
     tipoAtividade: {
         id: null,
         descricao: ""
     },
-    data: "",
+    data: `${year}-${month < 10 ? "0" + (month) : month}-${day < 10 ? "0" + (day) : day}`,
     horaInicio: "00:00",
     horaFim: "00:00",
     duracao: '0'
@@ -146,7 +151,7 @@ export default {
         usuarioLogado: function() {
             // Pega o usuário logado
             const json = localStorage.getItem(userKey)
-            // Transorma o json em objeto
+            // Transforma o json em objeto
             return JSON.parse(json)
         }
     },
@@ -192,7 +197,7 @@ export default {
         loadTipoAtividades() {
             const url = `${baseApiUrl}/tipoAtividade`
             axios.get(url).then(res => {
-                this.tipoAtividades = res.data.map(tipoCategoria => {
+                this.tipoAtividades = res.data.data.map(tipoCategoria => {
                     return { value: tipoCategoria.id, text: tipoCategoria.descricao }
                 })
             })
