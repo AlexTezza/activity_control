@@ -79,6 +79,55 @@
                 </div>
             </b-form-row>
             <hr>
+            
+            <b-form-row>
+                <b-form-group label="Pesquisa:" />
+            </b-form-row>
+            <b-form-row>
+                <div class="rcol-12 col-md-7">
+                    <b-form-group label="Descricao:" label-for="search-descricao">
+                        <b-form-input
+                            id="search-descricao" 
+                            type="text"
+                            v-model="search.descricao"
+                            placeholder="Pesquise pela descrição..." />
+                    </b-form-group>
+                </div>
+                <div class="rcol-12 col-md-2">
+                    <b-form-group label="Tipo atividade:" label-for="search-tipoAtividade">
+                        <b-form-select
+                            id="search-tipoAtividade"
+                            :options="tipoAtividades"
+                            v-model="search.tipoAtividade.id">
+
+                            <template slot="first">
+                                <option first :value="null">-- Selecione --</option>
+                            </template>
+                        </b-form-select>
+                    </b-form-group>
+                </div>
+                <div class="rcol-12 col-md-2">
+                    <b-form-group label="Data: *" label-for="search-data">
+                        <b-form-input
+                            id="search-data" 
+                            type="date"
+                            v-model="search.data" />
+                    </b-form-group>
+                </div>
+                <div class="col-12 col-md-1">
+                    <b-form-group label=" " label-for="search-buttons">
+                        <div id="search-buttons">
+                        <b-button variant="danger" class="mr-2" @click="resetSearch">
+                            <i class="fa fa-remove"></i>
+                        </b-button>
+                        <b-button variant="primary" class="mr-2" @click="searchAtividades">
+                            <i class="fa fa-search"></i>
+                        </b-button>
+                        </div>
+                    </b-form-group>
+                </div>
+            </b-form-row>
+            <hr>
             <b-table hover striped responsive :items=atividades :fields=fields res>
                 <template slot="actions" slot-scope="data">
                     <b-button variant="warning" @click="loadAtividade(data.item)" class="mr-2">
@@ -101,10 +150,11 @@ import PageTitle from '../template/PageTitle'
 import { baseApiUrl, showError, userKey } from '@/global'
 import axios from 'axios'
 
-const today = new Date()
-const day = today.getDate()
-const month = today.getMonth() + 1
-const year = today.getFullYear()
+const date = new Date()
+const day = date.getDate()
+const month = date.getMonth() + 1
+const year = date.getFullYear()
+const today = `${year}-${month < 10 ? "0" + (month) : month}-${day < 10 ? "0" + (day) : day}`
 
 const initialAtividade = {
     descricao: "",
@@ -112,10 +162,19 @@ const initialAtividade = {
         id: null,
         descricao: ""
     },
-    data: `${year}-${month < 10 ? "0" + (month) : month}-${day < 10 ? "0" + (day) : day}`,
+    data: today,
     horaInicio: "00:00",
     horaFim: "00:00",
     duracao: '0'
+}
+
+const initialSearch = {
+    descricao: null,
+    tipoAtividade: {
+        id: null,
+        descricao: ""
+    },
+    data: null
 }
 
 export default {
@@ -124,7 +183,9 @@ export default {
     data: function() {
         return {
             mode: 'save',
+            modeListagem: null,
             atividade: { ...initialAtividade },
+            search : { ...initialSearch },
             atividades: [],
             tipoAtividades: [],
             page: 1,
@@ -194,6 +255,28 @@ export default {
             this.atividade.tipoAtividade.id = null
             this.loadAtividades()
         },
+        searchAtividades() {
+            const descricao = this.search.descricao ? this.search.descricao : null
+            const idTipoAtividade = this.search.tipoAtividade.id ? this.search.tipoAtividade.id : null
+            const data = this.search.data ? this.search.data : null
+
+            const url = `${baseApiUrl}/atividades/search/${this.page}/${this.usuarioLogado.id}/${descricao}/${idTipoAtividade}/${data}`
+            axios.get(url).then(res => {
+                this.atividades = res.data.data
+                this.count = res.data.count
+                this.limit = res.data.limit
+
+                if (this.modeListagem || this.modeListagem !== 'normal') {
+                    this.modeListagem = 'search'
+                }
+                this.page = 1
+            })
+        },
+        resetSearch() {
+            this.search = { ...initialSearch }
+            this.search.tipoAtividade.id = null
+            this.modeListagem = 'normal'
+        },
         loadTipoAtividades() {
             const url = `${baseApiUrl}/tipoAtividade`
             axios.get(url).then(res => {
@@ -226,7 +309,11 @@ export default {
     },
     watch: {
         page() {
-            this.loadAtividades()
+            if (this.modeListagem || this.modeListagem === 'search') {
+                this.searchAtividades()
+            } else {
+                this.loadAtividades()
+            }
         },
         'atividade.horaInicio': [
             'updateDuracao', 
