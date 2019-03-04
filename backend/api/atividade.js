@@ -110,5 +110,67 @@ module.exports = app => {
             .catch(err => res.status(500).send(err))
     }
 
-    return { save, remove, get, getById }
+    const search = async (req, res) => {
+        const page = req.params.page || 1
+
+        const result = await app.db('atividade')
+        .modify(function(queryBuilder) {
+            if (req.params.idUsuario && req.params.idUsuario != 'null') {
+                queryBuilder.where({ idUsuario: req.params.idUsuario })
+            }
+            if (req.params.descricao && req.params.descricao != 'null') {
+                queryBuilder.where({ descricao: req.params.descricao })
+            }
+            if (req.params.idTipoAtividade && req.params.idTipoAtividade != 'null') {
+                queryBuilder.where({ idTipoAtividade: req.params.idTipoAtividade })
+            }
+            if (req.params.data && req.params.data != 'null') {
+                queryBuilder.where({ data: req.params.data })
+            }
+        }) 
+        .count('id')
+        .first()
+        const count = parseInt(result.count)
+
+        console.log(req.params.descricao)
+        app.db({ a: 'atividade', ta: 'tipoAtividade' })
+            .select('a.id', 'a.idUsuario', 'a.horaInicio', 'a.horaFim', 'a.duracao', 'a.descricao', 'a.data', { idTipoAtividade: 'ta.id', tipoAtividadeDescricao: 'ta.descricao' } )
+            .modify(function(queryBuilder) {
+                if (req.params.idUsuario && req.params.idUsuario != 'null') {
+                    queryBuilder.where({ 'a.idUsuario': req.params.idUsuario })
+                }
+                if (req.params.descricao && req.params.descricao != 'null') {
+                    queryBuilder.andWhere('a.descricao', 'ilike', `%${req.params.descricao}%`)
+                }
+                if (req.params.idTipoAtividade && req.params.idTipoAtividade != 'null') {
+                    queryBuilder.andWhere({ 'a.idTipoAtividade': req.params.idTipoAtividade })
+                }
+                if (req.params.data && req.params.data != 'null') {
+                    queryBuilder.andWhere({ 'a.data': req.params.data })
+                }
+            })
+            .limit(limit).offset(page * limit - limit)
+            .whereRaw('?? = ??', ['ta.id', 'a.idTipoAtividade'])
+            .orderBy('a.data', 'desc')
+            .orderBy('a.horaInicio', 'desc')
+            .then(atividades => atividades.map(atividade => {
+                atividade.tipoAtividade = {
+                    id: atividade.idTipoAtividade,
+                    descricao: atividade.tipoAtividadeDescricao
+                }
+
+                // Formata a data
+                atividade.data = atividade.data.toISOString().split('T')[0]
+
+                delete atividade.idTipoAtividade
+                delete atividade.tipoAtividadeDescricao
+
+                return atividade
+            }))
+            .then(atividades => res.json({ data: atividades, count, limit }))
+            .catch(err => res.status(500).send(err))
+
+    }
+
+    return { save, remove, get, getById, search }
 }

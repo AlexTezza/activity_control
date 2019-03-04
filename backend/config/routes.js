@@ -61,6 +61,9 @@ module.exports = app => {
         .put(app.api.atividade.save)
         .delete(app.api.atividade.remove)
 
+    app.route('/atividades/search/:page/:idUsuario/:descricao/:idTipoAtividade/:data')
+        .get(app.api.atividade.search)
+
     // app.route('/categories/:id/departamento')
     //     .all(app.config.passport.authenticate())
     //     .get(app.api.departamento.getByResponsavel)
