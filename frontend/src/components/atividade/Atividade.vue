@@ -79,54 +79,60 @@
                 </div>
             </b-form-row>
             <hr>
-            
-            <b-form-row>
-                <b-form-group label="Pesquisa:" />
-            </b-form-row>
-            <b-form-row>
-                <div class="rcol-12 col-md-7">
-                    <b-form-group label="Descricao:" label-for="search-descricao">
-                        <b-form-input
-                            id="search-descricao" 
-                            type="text"
-                            v-model="search.descricao"
-                            placeholder="Pesquise pela descrição..." />
-                    </b-form-group>
-                </div>
-                <div class="rcol-12 col-md-2">
-                    <b-form-group label="Tipo atividade:" label-for="search-tipoAtividade">
-                        <b-form-select
-                            id="search-tipoAtividade"
-                            :options="tipoAtividades"
-                            v-model="search.tipoAtividade.id">
 
-                            <template slot="first">
-                                <option first :value="null">-- Selecione --</option>
-                            </template>
-                        </b-form-select>
-                    </b-form-group>
-                </div>
-                <div class="rcol-12 col-md-2">
-                    <b-form-group label="Data: *" label-for="search-data">
-                        <b-form-input
-                            id="search-data" 
-                            type="date"
-                            v-model="search.data" />
-                    </b-form-group>
-                </div>
-                <div class="col-12 col-md-1">
-                    <b-form-group label=" " label-for="search-buttons">
-                        <div id="search-buttons">
-                        <b-button variant="danger" class="mr-2" @click="resetSearch">
-                            <i class="fa fa-remove"></i>
-                        </b-button>
-                        <b-button variant="primary" class="mr-2" @click="searchAtividades">
-                            <i class="fa fa-search"></i>
-                        </b-button>
-                        </div>
-                    </b-form-group>
-                </div>
-            </b-form-row>
+            <b-card no-body class="mb-1">
+                <b-card-header header-tag="header" class="p-0" role="tab">
+                    <b-button @click="toggleCollapse" v-b-toggle.accordion variant="light">Pesquisa
+                        <i class="fa fa-lg" :class="icon"></i>
+                    </b-button>
+                </b-card-header>
+                <b-collapse id="accordion" accordion="my-accordion" role="tabpanel">
+                    <b-card-body>
+                        <b-form-row>
+                            <div class="rcol-12 col-md-7">
+                                <b-form-group label="Descricao:" label-for="search-descricao">
+                                    <b-form-input
+                                        id="search-descricao" 
+                                        type="text"
+                                        v-model="search.descricao"
+                                        placeholder="Pesquise pela descrição..."
+                                        @keyup.native.enter="onEnter" />
+                                </b-form-group>
+                            </div>
+                            <div class="rcol-12 col-md-2">
+                                <b-form-group label="Tipo atividade:" label-for="search-tipoAtividade">
+                                    <b-form-select
+                                        id="search-tipoAtividade"
+                                        :options="tipoAtividades"
+                                        v-model="search.tipoAtividade.id" >
+
+                                        <template slot="first">
+                                            <option first :value="null">-- Selecione --</option>
+                                        </template>
+                                    </b-form-select>
+                                </b-form-group>
+                            </div>
+                            <div class="rcol-12 col-md-2">
+                                <b-form-group label="Data:" label-for="search-data">
+                                    <b-form-input
+                                        id="search-data" 
+                                        type="date"
+                                        v-model="search.data"
+                                        @keyup.native.enter="onEnter" />
+                                </b-form-group>
+                            </div>
+                            <div class="col-12 col-md-1" id="search-buttons">
+                                <b-button variant="danger" class="mr-1" @click="resetSearch">
+                                    <i class="fa fa-remove"></i>
+                                </b-button>
+                                <b-button variant="primary" @click="pressSearchAtividades">
+                                    <i class="fa fa-search"></i>
+                                </b-button>
+                            </div>
+                        </b-form-row>
+                    </b-card-body>
+                </b-collapse>
+            </b-card>
             <hr>
             <b-table hover striped responsive :items=atividades :fields=fields res>
                 <template slot="actions" slot-scope="data">
@@ -214,6 +220,9 @@ export default {
             const json = localStorage.getItem(userKey)
             // Transforma o json em objeto
             return JSON.parse(json)
+        },
+        icon() {
+            return this.$store.state.isCollapseVisible ? "fa-angle-up" : "fa-angle-down"
         }
     },
     methods: {
@@ -255,6 +264,10 @@ export default {
             this.atividade.tipoAtividade.id = null
             this.loadAtividades()
         },
+        pressSearchAtividades() {
+            this.page = 1
+            this.searchAtividades()
+        },
         searchAtividades() {
             const descricao = this.search.descricao ? this.search.descricao : null
             const idTipoAtividade = this.search.tipoAtividade.id ? this.search.tipoAtividade.id : null
@@ -269,7 +282,6 @@ export default {
                 if (this.modeListagem || this.modeListagem !== 'normal') {
                     this.modeListagem = 'search'
                 }
-                this.page = 1
             })
         },
         resetSearch() {
@@ -305,6 +317,12 @@ export default {
                 || this.atividade.horaFim === value) {
                 this.atividade.horaFim = this.atividade.horaInicio
             }
+        },
+        toggleCollapse() {
+            this.$store.commit('toggleCollapse')
+        },
+        onEnter: function() {
+            this.pressSearchAtividades()
         }
     },
     watch: {
@@ -334,6 +352,10 @@ export default {
     .atividade-form-cadastro {
         padding: 15px;
         background-color: white;
+    }
+
+    #search-buttons {
+        padding-top: 31px;
     }
 
 </style>

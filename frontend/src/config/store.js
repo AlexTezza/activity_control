@@ -7,6 +7,7 @@ Vue.use(Vuex)
 export default new Vuex.Store({
     state: {
         isMenuVisible: false,
+        isCollapseVisible: false,
         user: null
     },
     mutations: {
@@ -20,6 +21,13 @@ export default new Vuex.Store({
                 state.isMenuVisible = !state.isMenuVisible
             } else {
                 state.isMenuVisible = isVisible
+            }
+        },
+        toggleCollapse(state, isVisible) {
+            if (isVisible === undefined) {
+                state.isCollapseVisible = !state.isCollapseVisible
+            } else {
+                state.isCollapseVisible = isVisible
             }
         },
         setUser(state, user) {

@@ -132,7 +132,6 @@ module.exports = app => {
         .first()
         const count = parseInt(result.count)
 
-        console.log(req.params.descricao)
         app.db({ a: 'atividade', ta: 'tipoAtividade' })
             .select('a.id', 'a.idUsuario', 'a.horaInicio', 'a.horaFim', 'a.duracao', 'a.descricao', 'a.data', { idTipoAtividade: 'ta.id', tipoAtividadeDescricao: 'ta.descricao' } )
             .modify(function(queryBuilder) {

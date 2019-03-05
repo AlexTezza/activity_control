@@ -127,7 +127,6 @@ export default {
                 .catch(showError)
         },
         remove() {
-            console.log(this.usuarioDepartamento)
             const id = this.usuarioDepartamento.id
             axios.delete(`${baseApiUrl}/usuarioDepartamento/${id}`)
                 .then(() => {
