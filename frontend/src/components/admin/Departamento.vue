@@ -74,7 +74,7 @@
 
 <script>
 import PageTitle from '../template/PageTitle'
-import { baseApiUrl, showError, userKey } from '@/global'
+import { baseApiUrl, showError } from '@/global'
 import axios from 'axios'
 
 const initialDepartamento = {

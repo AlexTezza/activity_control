@@ -13,8 +13,6 @@
 
 <script>
 import { mapState } from 'vuex'
-import { baseApiUrl } from '@/global'
-import axios from 'axios'
 
 export default {
     name: 'Menu',

@@ -129,6 +129,11 @@
                                     <i class="fa fa-search"></i>
                                 </b-button>
                             </div>
+                            <div class="col-12" >
+                                <div>
+                                    Total de horas: {{search.horaTotal}}
+                                </div>
+                            </div>
                         </b-form-row>
                     </b-card-body>
                 </b-collapse>
@@ -180,7 +185,8 @@ const initialSearch = {
         id: null,
         descricao: ""
     },
-    data: null
+    data: today,
+    horaTotal: 0
 }
 
 export default {
@@ -282,11 +288,14 @@ export default {
                 if (this.modeListagem || this.modeListagem !== 'normal') {
                     this.modeListagem = 'search'
                 }
+                
+                this.search.horaTotal = this.atividades.reduce((total, valor) => total + valor.duracao, 0);
             })
         },
         resetSearch() {
             this.search = { ...initialSearch }
             this.search.tipoAtividade.id = null
+            this.search.horaTotal = 0
             this.modeListagem = 'normal'
         },
         loadTipoAtividades() {
