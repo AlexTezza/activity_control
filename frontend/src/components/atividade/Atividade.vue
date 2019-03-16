@@ -82,7 +82,7 @@
 
             <b-card no-body class="mb-1">
                 <b-card-header header-tag="header" class="p-0" role="tab">
-                    <b-button @click="toggleCollapse" v-b-toggle.accordion variant="light">Pesquisa
+                    <b-button @click="toggleCollapse" v-b-toggle.accordion variant="success">Pesquisa
                         <i class="fa fa-lg" :class="icon"></i>
                     </b-button>
                 </b-card-header>
@@ -284,12 +284,11 @@ export default {
                 this.atividades = res.data.data
                 this.count = res.data.count
                 this.limit = res.data.limit
+                this.search.horaTotal = res.data.amount
 
                 if (this.modeListagem || this.modeListagem !== 'normal') {
                     this.modeListagem = 'search'
                 }
-                
-                this.search.horaTotal = this.atividades.reduce((total, valor) => total + valor.duracao, 0);
             })
         },
         resetSearch() {

@@ -72,11 +72,7 @@ module.exports = app => {
         const page = req.query.page || 1
         const idUsuario = req.query.usuario || null
 
-        const result = await app.db('atividade')
-            .where({'idUsuario': idUsuario}) 
-            .count('id')
-            .first()
-        const count = parseInt(result.count)
+        const count = await getGetCount(idUsuario)
 
         app.db({ a: 'atividade', ta: 'tipoAtividade' })
             .select('a.id', 'a.idUsuario', 'a.horaInicio', 'a.horaFim', 'a.duracao', 'a.descricao', 'a.data', { idTipoAtividade: 'ta.id', tipoAtividadeDescricao: 'ta.descricao' } )
@@ -113,24 +109,9 @@ module.exports = app => {
     const search = async (req, res) => {
         const page = req.params.page || 1
 
-        const result = await app.db('atividade')
-        .modify(function(queryBuilder) {
-            if (req.params.idUsuario && req.params.idUsuario != 'null') {
-                queryBuilder.where({ idUsuario: req.params.idUsuario })
-            }
-            if (req.params.descricao && req.params.descricao != 'null') {
-                queryBuilder.where({ descricao: req.params.descricao })
-            }
-            if (req.params.idTipoAtividade && req.params.idTipoAtividade != 'null') {
-                queryBuilder.where({ idTipoAtividade: req.params.idTipoAtividade })
-            }
-            if (req.params.data && req.params.data != 'null') {
-                queryBuilder.where({ data: req.params.data })
-            }
-        }) 
-        .count('id')
-        .first()
-        const count = parseInt(result.count)
+        const count = await getSearchCount(req)
+
+        const amount = await getAmountDuracao(req)
 
         app.db({ a: 'atividade', ta: 'tipoAtividade' })
             .select('a.id', 'a.idUsuario', 'a.horaInicio', 'a.horaFim', 'a.duracao', 'a.descricao', 'a.data', { idTipoAtividade: 'ta.id', tipoAtividadeDescricao: 'ta.descricao' } )
@@ -166,9 +147,71 @@ module.exports = app => {
 
                 return atividade
             }))
-            .then(atividades => res.json({ data: atividades, count, limit }))
+            .then(atividades => res.json({ data: atividades, count, limit, amount }))
             .catch(err => res.status(500).send(err))
 
+    }
+
+    async function getGetCount(idUsuario) {
+        const result = await app.db('atividade')
+            .where({'idUsuario': idUsuario}) 
+            .count('id')
+            .first()
+        return parseInt(result.count)
+    }
+
+    async function getSearchCount(req) { 
+        const result = await app.db('atividade')
+            .modify(function(queryBuilder) {
+                if (req.params.idUsuario && req.params.idUsuario != 'null') {
+                    queryBuilder.where({ idUsuario: req.params.idUsuario })
+                }
+                if (req.params.descricao && req.params.descricao != 'null') {
+                    queryBuilder.andWhere('descricao', 'ilike', `%${req.params.descricao}%`)
+                }
+                if (req.params.idTipoAtividade && req.params.idTipoAtividade != 'null') {
+                    queryBuilder.where({ idTipoAtividade: req.params.idTipoAtividade })
+                }
+                if (req.params.data && req.params.data != 'null') {
+                    queryBuilder.where({ data: req.params.data })
+                }
+            }) 
+            .count('id')
+            .first()
+        return parseInt(result.count)
+    }
+
+    async function getAmountDuracao(req) {
+        const result = await app.db('atividade')
+            .modify(function(queryBuilder) {
+                if (req.params.idUsuario && req.params.idUsuario != 'null') {
+                    console.log(req.params.idUsuario)
+                    queryBuilder.where({ idUsuario: req.params.idUsuario })
+                }
+                if (req.params.descricao && req.params.descricao != 'null') {
+                    console.log(req.params.descricao)
+                    queryBuilder.andWhere('descricao', 'ilike', `%${req.params.descricao}%`)
+                }
+                if (req.params.idTipoAtividade && req.params.idTipoAtividade != 'null') {
+                    console.log(req.params.idTipoAtividade)
+                    queryBuilder.where({ idTipoAtividade: req.params.idTipoAtividade })
+                }
+                if (req.params.data && req.params.data != 'null') {
+                    console.log(req.params.data)
+                    queryBuilder.where({ data: req.params.data })
+                }
+            }) 
+            .sum('duracao')
+            .first()
+
+        if (result.sum) {
+            let totalMinutes = result.sum
+            let hours = Math.trunc(totalMinutes / 60)
+            let minutes = totalMinutes % 60
+
+            return `${hours}:${minutes}`
+        }
+        return 0
     }
 
     return { save, remove, get, getById, search }
