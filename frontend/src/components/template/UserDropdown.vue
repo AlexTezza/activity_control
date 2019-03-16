@@ -4,6 +4,8 @@
             <span class="d-none d-sm-block">{{ user.name }}</span>
             <div class="user-dropdown-img">
                 <Gravatar :email="user.email" alt="User" />
+
+                <label class="user-name">{{user.nome}}</label>
             </div>
             <i class="fa fa-angle-down"></i>
         </div>
@@ -97,5 +99,10 @@ export default {
         text-decoration: none;
         color: #000;
         background-color: #EDEDED;
+    }
+
+    .user-name {
+        margin: 10px;
+        font-weight: 200;
     }
 </style>
