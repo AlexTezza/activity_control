@@ -185,19 +185,15 @@ module.exports = app => {
         const result = await app.db('atividade')
             .modify(function(queryBuilder) {
                 if (req.params.idUsuario && req.params.idUsuario != 'null') {
-                    console.log(req.params.idUsuario)
                     queryBuilder.where({ idUsuario: req.params.idUsuario })
                 }
                 if (req.params.descricao && req.params.descricao != 'null') {
-                    console.log(req.params.descricao)
                     queryBuilder.andWhere('descricao', 'ilike', `%${req.params.descricao}%`)
                 }
                 if (req.params.idTipoAtividade && req.params.idTipoAtividade != 'null') {
-                    console.log(req.params.idTipoAtividade)
                     queryBuilder.where({ idTipoAtividade: req.params.idTipoAtividade })
                 }
                 if (req.params.data && req.params.data != 'null') {
-                    console.log(req.params.data)
                     queryBuilder.where({ data: req.params.data })
                 }
             }) 
@@ -208,6 +204,13 @@ module.exports = app => {
             let totalMinutes = result.sum
             let hours = Math.trunc(totalMinutes / 60)
             let minutes = totalMinutes % 60
+
+            if (hours < 10) {
+                hours = `0${hours}`
+            }
+            if (minutes < 10) {
+                minutes = `0${minutes}`
+            }
 
             return `${hours}:${minutes}`
         }
