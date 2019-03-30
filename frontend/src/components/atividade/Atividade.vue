@@ -266,7 +266,9 @@ export default {
         },
         reset() {
             this.mode = 'save'
+            let selectedDate = this.atividade.data
             this.atividade = { ...initialAtividade }
+            this.atividade.data = selectedDate
             this.atividade.tipoAtividade.id = null
             this.loadAtividades()
         },
