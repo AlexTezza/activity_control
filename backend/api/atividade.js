@@ -125,8 +125,17 @@ module.exports = app => {
                 if (req.params.idTipoAtividade && req.params.idTipoAtividade != 'null') {
                     queryBuilder.andWhere({ 'a.idTipoAtividade': req.params.idTipoAtividade })
                 }
-                if (req.params.data && req.params.data != 'null') {
-                    queryBuilder.andWhere({ 'a.data': req.params.data })
+                if ((req.params.dataDe && req.params.dataDe != 'null') 
+                    && (req.params.dataAte && req.params.dataAte != 'null')) {
+
+                    queryBuilder.whereBetween( 'a.data', [req.params.dataDe, req.params.dataAte] )
+                } else {
+                    if (req.params.dataDe && req.params.dataDe != 'null') {
+                        queryBuilder.andWhere({ 'a.data': req.params.dataDe })
+                    }
+                    if (req.params.dataAte && req.params.dataAte != 'null') {
+                        queryBuilder.andWhere({ 'a.data': req.params.dataAte })
+                    }
                 }
             })
             .limit(limit).offset(page * limit - limit)

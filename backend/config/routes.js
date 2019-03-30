@@ -61,7 +61,7 @@ module.exports = app => {
         .put(app.api.atividade.save)
         .delete(app.api.atividade.remove)
 
-    app.route('/atividades/search/:page/:idUsuario/:descricao/:idTipoAtividade/:data')
+    app.route('/atividades/search/:page/:idUsuario/:descricao/:idTipoAtividade/:dataDe/:dataAte')
         .get(app.api.atividade.search)
 
     // app.route('/categories/:id/departamento')

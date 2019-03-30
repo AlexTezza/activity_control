@@ -89,7 +89,7 @@
                 <b-collapse id="accordion" accordion="my-accordion" role="tabpanel">
                     <b-card-body>
                         <b-form-row>
-                            <div class="rcol-12 col-md-7">
+                            <div class="rcol-12 col-md-8">
                                 <b-form-group label="Descricao:" label-for="search-descricao">
                                     <b-form-input
                                         id="search-descricao" 
@@ -99,7 +99,7 @@
                                         @keyup.native.enter="onEnter" />
                                 </b-form-group>
                             </div>
-                            <div class="rcol-12 col-md-2">
+                            <div class="rcol-12 col-md-3">
                                 <b-form-group label="Tipo atividade:" label-for="search-tipoAtividade">
                                     <b-form-select
                                         id="search-tipoAtividade"
@@ -112,15 +112,6 @@
                                     </b-form-select>
                                 </b-form-group>
                             </div>
-                            <div class="rcol-12 col-md-2">
-                                <b-form-group label="Data:" label-for="search-data">
-                                    <b-form-input
-                                        id="search-data" 
-                                        type="date"
-                                        v-model="search.data"
-                                        @keyup.native.enter="onEnter" />
-                                </b-form-group>
-                            </div>
                             <div class="col-12 col-md-1" id="search-buttons">
                                 <b-button variant="danger" class="mr-1" @click="resetSearch">
                                     <i class="fa fa-remove"></i>
@@ -129,6 +120,28 @@
                                     <i class="fa fa-search"></i>
                                 </b-button>
                             </div>
+                        </b-form-row>
+                        <b-form-row>
+                            <div class="rcol-12 col-md-3">
+                                <b-form-group label="Data de:" label-for="search-data-of">
+                                    <b-form-input
+                                        id="search-data-of" 
+                                        type="date"
+                                        v-model="search.dataDe"
+                                        @keyup.native.enter="onEnter" />
+                                </b-form-group>
+                            </div>
+                            <div class="rcol-12 col-md-3">
+                                <b-form-group label="Até:" label-for="search-data-until">
+                                    <b-form-input
+                                        id="search-data-until" 
+                                        type="date"
+                                        v-model="search.dataAte"
+                                        @keyup.native.enter="onEnter" />
+                                </b-form-group>
+                            </div>
+                        </b-form-row>
+                        <b-form-row>
                             <div class="col-12" >
                                 <div>
                                     Total de horas: {{search.horaTotal}}
@@ -185,7 +198,8 @@ const initialSearch = {
         id: null,
         descricao: ""
     },
-    data: today,
+    dataDe: today,
+    dataAte: null,
     horaTotal: 0
 }
 
@@ -279,9 +293,10 @@ export default {
         searchAtividades() {
             const descricao = this.search.descricao ? this.search.descricao : null
             const idTipoAtividade = this.search.tipoAtividade.id ? this.search.tipoAtividade.id : null
-            const data = this.search.data ? this.search.data : null
+            const dataDe = this.search.dataDe ? this.search.dataDe : null
+            const dataAte = this.search.dataAte ? this.search.dataAte : null
 
-            const url = `${baseApiUrl}/atividades/search/${this.page}/${this.usuarioLogado.id}/${descricao}/${idTipoAtividade}/${data}`
+            const url = `${baseApiUrl}/atividades/search/${this.page}/${this.usuarioLogado.id}/${descricao}/${idTipoAtividade}/${dataDe}/${dataAte}`
             axios.get(url).then(res => {
                 this.atividades = res.data.data
                 this.count = res.data.count
