@@ -211,8 +211,17 @@
                 if (req.params.idTipoAtividade && req.params.idTipoAtividade != 'null') {
                     queryBuilder.where({ idTipoAtividade: req.params.idTipoAtividade })
                 }
-                if (req.params.data && req.params.data != 'null') {
-                    queryBuilder.where({ data: req.params.data })
+                if ((req.params.dataDe && req.params.dataDe != 'null') 
+                    && (req.params.dataAte && req.params.dataAte != 'null')) {
+
+                    queryBuilder.whereBetween( 'data', [req.params.dataDe, req.params.dataAte] )
+                } else {
+                    if (req.params.dataDe && req.params.dataDe != 'null') {
+                        queryBuilder.andWhere({ 'data': req.params.dataDe })
+                    }
+                    if (req.params.dataAte && req.params.dataAte != 'null') {
+                        queryBuilder.andWhere({ 'data': req.params.dataAte })
+                    }
                 }
             }) 
             .sum('duracao')
