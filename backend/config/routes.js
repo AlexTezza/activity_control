@@ -64,11 +64,7 @@ module.exports = app => {
     app.route('/atividades/search/:page/:idUsuario/:descricao/:idTipoAtividade/:dataDe/:dataAte')
         .get(app.api.atividade.search)
 
-    // app.route('/categories/:id/departamento')
-    //     .all(app.config.passport.authenticate())
-    //     .get(app.api.departamento.getByResponsavel)
-
-    // app.route('/stats')
-    //     .all(app.config.passport.authenticate())
-    //     .get(app.api.stat.get)
+    
+    app.route('/dashboard/user/:idUsuario/:dataDe/:dataAte')
+        .get(app.api.dashboard.searchHoursByActivityType)
 }
