@@ -1,11 +1,10 @@
 <template>
     <div class="user-dropdown">
         <div class="user-button">
-            <span class="d-none d-sm-block">{{ user.name }}</span>
             <div class="user-dropdown-img">
                 <Gravatar :email="user.email" alt="User" />
 
-                <label class="user-name">{{user.nome}}</label>
+                <label class="user-name">{{userName}}</label>
             </div>
             <i class="fa fa-angle-down"></i>
         </div>
@@ -26,13 +25,37 @@ import Gravatar from 'vue-gravatar'
 export default {
     name: 'UserDropdown',
     components: { Gravatar },
+    data: function() {
+        return {
+            userName: ''
+        }
+    },
     computed: mapState(['user']),
     methods: {
+        formatUserName() {
+            let user = this.user.nome
+            let userNameArray = user.split(' ')
+            let lastPosition = userNameArray.length - 1
+            
+            if (lastPosition > 0) {
+                if (lastPosition === 1) {
+                    this.userName = this.user.nome
+                } else {
+                    this.userName = userNameArray[0] + ' ' + userNameArray[lastPosition]
+                }
+            } else {
+                this.userName = userNameArray[0]
+            }
+
+        },
         logout() {
             localStorage.removeItem(userKey)
             this.$store.commit('setUser', null)
             this.$router.push({ name: 'auth' })
         }
+    },
+    mounted() {
+        this.formatUserName()
     }
 }
 </script>
