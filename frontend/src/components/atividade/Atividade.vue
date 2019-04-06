@@ -173,12 +173,9 @@
 import PageTitle from '../template/PageTitle'
 import { baseApiUrl, showError, userKey } from '@/global'
 import axios from 'axios'
+import moment from 'moment'
 
-const date = new Date()
-const day = date.getDate()
-const month = date.getMonth() + 1
-const year = date.getFullYear()
-const today = `${year}-${month < 10 ? "0" + (month) : month}-${day < 10 ? "0" + (day) : day}`
+const today = moment().format('YYYY-MM-DD')
 
 const initialAtividade = {
     descricao: "",

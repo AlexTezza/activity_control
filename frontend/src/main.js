@@ -10,6 +10,10 @@ import './config/mq'
 
 import store from './config/store'
 import router from './config/router'
+import VueApexCharts from 'vue-apexcharts'
+
+Vue.use(VueApexCharts)
+Vue.component('apexchart', VueApexCharts)
 
 Vue.config.productionTip = false
 
