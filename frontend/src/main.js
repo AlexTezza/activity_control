@@ -11,9 +11,11 @@ import './config/mq'
 import store from './config/store'
 import router from './config/router'
 import VueApexCharts from 'vue-apexcharts'
+import VueQRCodeComponent from 'vue-qrcode-component'
 
 Vue.use(VueApexCharts)
 Vue.component('apexchart', VueApexCharts)
+Vue.component('qr-code', VueQRCodeComponent)
 
 Vue.config.productionTip = false
 

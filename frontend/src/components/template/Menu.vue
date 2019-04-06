@@ -7,6 +7,9 @@
             <router-link class="menu-item" to="/atividade">
                 <i class="fa fa"> Atividades </i>
             </router-link>
+            <router-link class="menu-item" to="/mobile/access">
+                <i class="fa fa"> Acesso Mobile </i>
+            </router-link>
         </nav>
     </aside>
 </template>

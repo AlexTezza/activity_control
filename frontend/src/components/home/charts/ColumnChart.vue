@@ -35,7 +35,7 @@
 
 <script>
 import axios from 'axios'
-import { baseApiUrl, showError, userKey } from '@/global'
+import { baseApiUrl, userKey } from '@/global'
 import moment from 'moment'
 
 const initialSearch = {
@@ -78,7 +78,6 @@ export default {
 				tooltip: {
 					y: {
 						formatter: function(val) {
-							console.log(val.toString())
 							let hours = val.toString().split('.')[0]
 							let minutes = val.toString().split('.')[1]
 							if (minutes && minutes !== '00') {
@@ -113,13 +112,12 @@ export default {
 					this.columnName = []
 					this.columnData = []
 
-					res.data.result.forEach((element, index) => {
+					res.data.result.forEach((element) => {
 						this.columnName.push(element.name)
 						this.columnData.push(element.data)
 					});
 					this.chartOptions = {  xaxis: {  categories: this.columnName  }}
 					this.series = [{ name: 'Tempo', data: this.columnData }]
-					console.log(this.series)
 				}
             })
 		},

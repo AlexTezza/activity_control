@@ -1,3 +1,3 @@
 module.exports = {
-    baseUrl: 'localhost'
+    baseUrl: '192.168.0.109'
 }

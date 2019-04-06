@@ -45,7 +45,6 @@ module.exports = app => {
 
     const remove = async (req, res) => {
 
-        console.log(req.params.id)
         try {
             const rowsDeleted = await app.db('usuarioDepartamento')
                 .where({ id: req.params.id }).del()
