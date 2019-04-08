@@ -43,6 +43,8 @@ const initialSearch = {
     dataAte: moment().endOf('month').format('YYYY-MM-DD')
 }
 
+const defaultText = 'Nenhum dado para ser exibido'
+
 export default {
 	name: 'ColumnChart',
 	data: function() {
@@ -65,7 +67,7 @@ export default {
 					colors: ['transparent']
 				},
 				xaxis: {
-					categories: ['Nenhum dado para ser exibido']
+					categories: [this.defaultText]
 				},
 				yaxis: {
 					title: {
@@ -108,17 +110,18 @@ export default {
 		loadData() {
 			const url = `${baseApiUrl}/dashboard/user/${this.usuarioLogado.id}/${this.search.dataDe}/${this.search.dataAte}`
 			axios.get(url).then(res => {
+				this.columnName = [defaultText]
+				this.columnData = []
 				if (res.data && res.data.result && res.data.result.length > 0) {
 					this.columnName = []
-					this.columnData = []
-
+					
 					res.data.result.forEach((element) => {
 						this.columnName.push(element.name)
 						this.columnData.push(element.data)
 					});
-					this.chartOptions = {  xaxis: {  categories: this.columnName  }}
-					this.series = [{ name: 'Tempo', data: this.columnData }]
 				}
+				this.chartOptions = {  xaxis: {  categories: this.columnName  }}
+				this.series = [{ name: 'Tempo', data: this.columnData }]
             })
 		},
 		resetSearch() {
