@@ -66,6 +66,7 @@ function formatterTooltip(val) {
 		}
 		return hours + "h"
 	}
+	return ""
 }
 
 const defaultText = 'Nenhum dado para ser exibido'
@@ -180,7 +181,7 @@ export default {
 
 				this.chartSerieName = [defaultText]
 				// Clean the data of Bar Chart
-				this.chartBarData = []
+				this.chartBarData = [0]
 				// Clean the data of Donut Chart
 				this.chartDonutData = [0]
 
