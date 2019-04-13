@@ -4,7 +4,7 @@
             sub="Gráficos de hora" />
 
         <b-form-row>
-            <div>
+            <div class="chart-view">
                 <ColumnChart />
             </div>
         </b-form-row>
@@ -37,5 +37,9 @@ export default {
 </script>
 
 <style>
+
+.chart-view {
+	width: 100%;
+}
 
 </style>
