@@ -152,7 +152,7 @@
                 </b-collapse>
             </b-card>
             <hr>
-            <b-table hover striped responsive :items=atividades :fields=fields res>
+            <b-table hover striped responsive :items=atividades :fields=fields>
                 <template slot="actions" slot-scope="data">
                     <b-button variant="warning" @click="loadAtividade(data.item)" class="mr-2">
                         <i class="fa fa-pencil"></i>
@@ -276,11 +276,17 @@ export default {
                 .catch(showError)
         },
         reset() {
-            this.mode = 'save'
             let selectedDate = this.atividade.data
+            let lastUntilHour = this.atividade.horaFim
+
+            this.mode = 'save'
+
             this.atividade = { ...initialAtividade }
             this.atividade.data = selectedDate
+            this.atividade.horaInicio = lastUntilHour
+            this.atividade.horaFim = lastUntilHour
             this.atividade.tipoAtividade.id = null
+
             this.loadAtividades()
         },
         pressSearchAtividades() {
@@ -334,9 +340,8 @@ export default {
             }
             this.atividade.duracao = duracao
         },
-        updateHoraFim(value) {
-            if (this.atividade.horaFim === initialAtividade.horaFim
-                || this.atividade.horaFim === value) {
+        updateHoraFim() {
+            if (this.atividade.duracao < 0) {
                 this.atividade.horaFim = this.atividade.horaInicio
             }
         },
@@ -357,8 +362,8 @@ export default {
         },
         'atividade.horaInicio': [
             'updateDuracao', 
-            function(value, oldValue) {
-                this.updateHoraFim(oldValue)
+            function() {
+                this.updateHoraFim()
             }
         ],
         'atividade.horaFim': 'updateDuracao'
