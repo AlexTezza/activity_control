@@ -5,7 +5,7 @@
 
         <b-form-row>
             <div class="chart-view">
-                <ColumnChart />
+                <Charts />
             </div>
         </b-form-row>
     </div>
@@ -14,13 +14,13 @@
 <script>
 import PageTitle from '../template/PageTitle'
 
-import ColumnChart from './charts/ColumnChart'
+import Charts from './charts/Charts'
 
 export default {
     name: 'Home',
     components: { 
         PageTitle, 
-        ColumnChart
+        Charts
     },
     data: function() {
         return {
