@@ -4,8 +4,18 @@
             sub="Cadastro de Atividades" />
         <div class="atividade-form-cadastro">
             <b-form-row>
-                <div class="col-12 col-md-8">
-                    <input id="atividade-id" type="hidden" v-model="atividade.id" />
+                <input id="atividade-id" type="hidden" v-model="atividade.id" />
+                <div class="col-12 col-md-2">
+                    <b-form-group label="Task: #" label-for="atividade-tarefa">
+                        <b-form-input
+                            :readonly="mode === 'remove'"
+                            id="atividade-tarefa"
+                            type="text"
+                            v-model="atividade.tarefa"
+                            placeholder="Informe a Task do Redmine..." />
+                    </b-form-group>
+                </div>
+                <div class="col-12 col-md-7">
                     <b-form-group label="Descricao: *" label-for="atividade-descricao">
                         <b-form-input 
                             :readonly="mode === 'remove'"
@@ -15,7 +25,7 @@
                             placeholder="Informe a Descrição..." />
                     </b-form-group>
                 </div>
-                <div class="col-12 col-md-4">
+                <div class="col-12 col-md-3">
                     <b-form-group label="Tipo atividade: *" label-for="atividade-tipoAtividade">
                         <b-form-select v-if="mode === 'save'"
                             id="atividade-tipoAtividade"
@@ -178,6 +188,7 @@ import moment from 'moment'
 const today = moment().format('YYYY-MM-DD')
 
 const initialAtividade = {
+    tarefa: "",
     descricao: "",
     tipoAtividade: {
         id: null,
