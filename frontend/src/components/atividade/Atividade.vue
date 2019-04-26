@@ -10,9 +10,9 @@
                         <b-form-input
                             :readonly="mode === 'remove'"
                             id="atividade-tarefa"
-                            type="text"
+                            type="number"
                             v-model="atividade.tarefa"
-                            placeholder="Informe a Task do Redmine..." />
+                            placeholder="Nº Task do Redmine..." />
                     </b-form-group>
                 </div>
                 <div class="col-12 col-md-7">
@@ -99,6 +99,15 @@
                 <b-collapse id="accordion" accordion="my-accordion" role="tabpanel">
                     <b-card-body>
                         <b-form-row>
+                            <div class="col-12 col-md-2">
+                                <b-form-group label="Task: #" label-for="search-tarefa">
+                                    <b-form-input
+                                        id="search-tarefa"
+                                        type="number"
+                                        v-model="search.tarefa"
+                                        placeholder="Nº Task do Redmine..." />
+                                </b-form-group>
+                            </div>
                             <div class="rcol-12 col-md-8">
                                 <b-form-group label="Descricao:" label-for="search-descricao">
                                     <b-form-input
@@ -109,7 +118,9 @@
                                         @keyup.native.enter="onEnter" />
                                 </b-form-group>
                             </div>
-                            <div class="rcol-12 col-md-3">
+                        </b-form-row>
+                        <b-form-row>
+                            <div class="rcol-12 col-md-4">
                                 <b-form-group label="Tipo atividade:" label-for="search-tipoAtividade">
                                     <b-form-select
                                         id="search-tipoAtividade"
@@ -122,16 +133,6 @@
                                     </b-form-select>
                                 </b-form-group>
                             </div>
-                            <div class="col-12 col-md-1" id="search-buttons">
-                                <b-button variant="danger" class="mr-1" @click="resetSearch">
-                                    <i class="fa fa-remove"></i>
-                                </b-button>
-                                <b-button variant="primary" @click="pressSearchAtividades">
-                                    <i class="fa fa-search"></i>
-                                </b-button>
-                            </div>
-                        </b-form-row>
-                        <b-form-row>
                             <div class="rcol-12 col-md-3">
                                 <b-form-group label="Data de:" label-for="search-data-of">
                                     <b-form-input
@@ -149,6 +150,14 @@
                                         v-model="search.dataAte"
                                         @keyup.native.enter="onEnter" />
                                 </b-form-group>
+                            </div>
+                            <div class="col-12 col-md-2" id="search-buttons">
+                                <b-button variant="danger" class="mr-1" @click="resetSearch">
+                                    <i class="fa fa-remove"></i>
+                                </b-button>
+                                <b-button variant="primary" @click="pressSearchAtividades">
+                                    <i class="fa fa-search"></i>
+                                </b-button>
                             </div>
                         </b-form-row>
                         <b-form-row>
@@ -188,7 +197,7 @@ import moment from 'moment'
 const today = moment().format('YYYY-MM-DD')
 
 const initialAtividade = {
-    tarefa: "",
+    tarefa: null,
     descricao: "",
     tipoAtividade: {
         id: null,
@@ -201,6 +210,7 @@ const initialAtividade = {
 }
 
 const initialSearch = {
+    tarefa: null,
     descricao: null,
     tipoAtividade: {
         id: null,
@@ -226,6 +236,7 @@ export default {
             limit: 0,
             count: 0,
             fields: [
+                { key: 'tarefa', label: 'Task', sortable: true },
                 { key: 'descricao', label: 'Descrição', sortable: true },
                 { key: 'tipoAtividade.descricao', label: 'Tipo atividade', sortable: true },
                 { key: 'data', label: 'Data', sortable: true,
@@ -270,6 +281,7 @@ export default {
             const method = this.atividade.id ? 'put' : 'post'
             const id = this.atividade.id ? `/${this.atividade.id}` : ''
             this.atividade.idUsuario = this.usuarioLogado.id;
+
             axios[method](`${baseApiUrl}/atividade${id}`, this.atividade)
                 .then(() => {
                     this.$toasted.global.defaultSuccess()
@@ -305,12 +317,15 @@ export default {
             this.searchAtividades()
         },
         searchAtividades() {
+            const tarefa = this.search.tarefa && this.search.tarefa !== "" ? this.search.tarefa : null
             const descricao = this.search.descricao ? this.search.descricao : null
             const idTipoAtividade = this.search.tipoAtividade.id ? this.search.tipoAtividade.id : null
             const dataDe = this.search.dataDe ? this.search.dataDe : null
             const dataAte = this.search.dataAte ? this.search.dataAte : null
 
-            const url = `${baseApiUrl}/atividades/search/${this.page}/${this.usuarioLogado.id}/${descricao}/${idTipoAtividade}/${dataDe}/${dataAte}`
+            const url = 
+                `${baseApiUrl}/atividades/search/${this.page}/${this.usuarioLogado.id}/${tarefa}/${descricao}/${idTipoAtividade}/${dataDe}/${dataAte}`
+
             axios.get(url).then(res => {
                 this.atividades = res.data.data
                 this.count = res.data.count

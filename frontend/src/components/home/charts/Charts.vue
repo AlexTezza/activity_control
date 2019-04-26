@@ -181,7 +181,7 @@ export default {
 
 				this.chartSerieName = [defaultText]
 				// Clean the data of Bar Chart
-				this.chartBarData = [0]
+				this.chartBarData = []
 				// Clean the data of Donut Chart
 				this.chartDonutData = [0]
 

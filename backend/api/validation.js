@@ -1,4 +1,7 @@
 module.exports = app => {
+
+    const MAX_TASK_NUMBER = 10000000000
+
     function existsOrError(value, msg) {
         if(!value) throw msg
         if(Array.isArray(value) && value.length === 0) throw msg
@@ -26,11 +29,17 @@ module.exports = app => {
         }
     }
 
-    function validarHoraInicioFim(horaInicio, horaFim, msg) {
+    function validateHourStartEnd(horaInicio, horaFim, msg) {
         if (horaInicio > horaFim) {
             throw msg;
         }
     }
 
-    return { existsOrError, notExistsOrError, equalsOrError, objectContainsIdOrErro, validarHoraInicioFim }
+    function validateTask(tarefa, msg) {
+        if (tarefa && (tarefa <= 0 || tarefa > MAX_TASK_NUMBER)) {
+            throw msg;
+        }
+    }
+
+    return { existsOrError, notExistsOrError, equalsOrError, objectContainsIdOrErro, validateHourStartEnd, validateTask }
 }
