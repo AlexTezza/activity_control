@@ -1,5 +1,5 @@
 ﻿module.exports = app => {
-    const { existsOrError, notExistsOrError, objectContainsIdOrErro, validarHoraInicioFim } = app.api.validation
+    const { existsOrError, notExistsOrError, objectContainsIdOrErro, validateHourStartEnd, validateTask } = app.api.validation
 
     const save = async (req, res) => {
         const atividade = { ...req.body }
@@ -13,12 +13,17 @@
             objectContainsIdOrErro(atividade.tipoAtividade, 'Tipo Atividade não informada')
             existsOrError(atividade.horaInicio, 'Hora início não informada')
             existsOrError(atividade.horaFim, 'Hora fim não informada')
-            validarHoraInicioFim(atividade.horaInicio, atividade.horaFim, "A hora de Início não pode ser maior que a hora Fim")
+            validateHourStartEnd(atividade.horaInicio, atividade.horaFim, "A hora de Início não pode ser maior que a hora Fim")
+            validateTask(atividade.tarefa, "O número informado no campo Task é inválido")
             existsOrError(atividade.descricao, 'Descrição não informada')
             existsOrError(atividade.data, 'Data não informada')
 
             atividade.idTipoAtividade = atividade.tipoAtividade.id;
             delete atividade.tipoAtividade
+
+            if (atividade.tarefa === "") {
+                atividade.tarefa = null
+            }
 
             const atividadeFromDB = await app.db('atividade')
                 .where({ data: atividade.data, idUsuario: atividade.idUsuario })
@@ -75,7 +80,8 @@
         const count = await getGetCount(idUsuario)
 
         app.db({ a: 'atividade', ta: 'tipoAtividade' })
-            .select('a.id', 'a.idUsuario', 'a.horaInicio', 'a.horaFim', 'a.duracao', 'a.descricao', 'a.data', { idTipoAtividade: 'ta.id', tipoAtividadeDescricao: 'ta.descricao' } )
+            .select('a.id', 'a.idUsuario', 'a.horaInicio', 'a.horaFim', 'a.duracao', 'a.tarefa', 'a.descricao', 'a.data',
+                { idTipoAtividade: 'ta.id', tipoAtividadeDescricao: 'ta.descricao' } )
             .limit(limit).offset(page * limit - limit)
             .where({'a.idUsuario': idUsuario}) // Filtro por usuário
             .whereRaw('?? = ??', ['ta.id', 'a.idTipoAtividade'])
@@ -108,16 +114,19 @@
 
     const search = async (req, res) => {
         const page = req.params.page || 1
-
+        
         const count = await getSearchCount(req)
-
+        
         const amount = await getAmountDuracao(req)
 
         app.db({ a: 'atividade', ta: 'tipoAtividade' })
-            .select('a.id', 'a.idUsuario', 'a.horaInicio', 'a.horaFim', 'a.duracao', 'a.descricao', 'a.data', { idTipoAtividade: 'ta.id', tipoAtividadeDescricao: 'ta.descricao' } )
+            .select('a.id', 'a.idUsuario', 'a.horaInicio', 'a.horaFim', 'a.duracao', 'a.tarefa', 'a.descricao', 'a.data', { idTipoAtividade: 'ta.id', tipoAtividadeDescricao: 'ta.descricao' } )
             .modify(function(queryBuilder) {
                 if (req.params.idUsuario && req.params.idUsuario != 'null') {
                     queryBuilder.where({ 'a.idUsuario': req.params.idUsuario })
+                }
+                if (req.params.tarefa && req.params.tarefa != 'null') {
+                    queryBuilder.andWhere('a.tarefa', '=', `${Number.parseFloat(req.params.tarefa)}`)
                 }
                 if (req.params.descricao && req.params.descricao != 'null') {
                     queryBuilder.andWhere('a.descricao', 'ilike', `%${req.params.descricao}%`)
@@ -175,6 +184,9 @@
                 if (req.params.idUsuario && req.params.idUsuario != 'null') {
                     queryBuilder.where({ idUsuario: req.params.idUsuario })
                 }
+                if (req.params.tarefa && req.params.tarefa != 'null') {
+                    queryBuilder.andWhere('tarefa', '=', `${Number.parseFloat(req.params.tarefa)}`)
+                }
                 if (req.params.descricao && req.params.descricao != 'null') {
                     queryBuilder.andWhere('descricao', 'ilike', `%${req.params.descricao}%`)
                 }
@@ -205,8 +217,11 @@
                 if (req.params.idUsuario && req.params.idUsuario != 'null') {
                     queryBuilder.where({ idUsuario: req.params.idUsuario })
                 }
+                if (req.params.tarefa && req.params.tarefa != 'null') {
+                    queryBuilder.andWhere('tarefa', '=', `${Number.parseFloat(req.params.tarefa)}`)
+                }
                 if (req.params.descricao && req.params.descricao != 'null') {
-                    queryBuilder.andWhere('descricao', 'ilike', `%${req.params.descricao}%`)
+                    queryBuilder.andWhere('descricao', '=', `%${req.params.descricao}%`)
                 }
                 if (req.params.idTipoAtividade && req.params.idTipoAtividade != 'null') {
                     queryBuilder.where({ idTipoAtividade: req.params.idTipoAtividade })
