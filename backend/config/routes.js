@@ -62,9 +62,11 @@ module.exports = app => {
         .delete(app.api.atividade.remove)
 
     app.route('/atividades/search/:page/:idUsuario/:tarefa/:descricao/:idTipoAtividade/:dataDe/:dataAte')
+        .all(app.config.passport.authenticate())
         .get(app.api.atividade.search)
 
     
     app.route('/dashboard/user/:idUsuario/:dataDe/:dataAte')
+        .all(app.config.passport.authenticate())
         .get(app.api.dashboard.searchHoursByActivityType)
 }
