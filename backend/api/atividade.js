@@ -221,7 +221,7 @@
                     queryBuilder.andWhere('tarefa', '=', `${Number.parseFloat(req.params.tarefa)}`)
                 }
                 if (req.params.descricao && req.params.descricao != 'null') {
-                    queryBuilder.andWhere('descricao', '=', `%${req.params.descricao}%`)
+                    queryBuilder.andWhere('descricao', 'ilike', `%${req.params.descricao}%`)
                 }
                 if (req.params.idTipoAtividade && req.params.idTipoAtividade != 'null') {
                     queryBuilder.where({ idTipoAtividade: req.params.idTipoAtividade })
