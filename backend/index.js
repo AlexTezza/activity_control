@@ -1,7 +1,6 @@
 const app = require('express')()
 const consign = require('consign')
 const db = require('./config/db')
-const { baseUrl } = require('./global/global')
 
 app.db = db
 
@@ -13,6 +12,6 @@ consign()
     .then('./config/routes.js')
     .into(app)
 
-app.listen(3000, baseUrl, () => {
+app.listen(3000, () => {
     console.log('Backend executando...')
 })
