@@ -8,7 +8,11 @@ média de horas gastas por tipo de atividades, entre outros.
 
 # Configuração do projeto
 ## Backend
-Para executar o backend é necessário primeiro criar uma nova base de dados (postgres), com o nome **hour_control**.
+
+#### Para baixar as dependências do projeto(backend), basta executar o seguinte comando dentro da pasta `\backend`:
+`npm install`
+
+Antes de executar o backend é necessário criar uma nova base de dados (postgres), utilize o nome que preferir, neste exemplo iremos considerar o como **hour_control**.
 
 Após criar esta base, precisamos renomear o arquivo `\backend\env_file` para `.env` (lembrando que este arquivo não pode ser comitado, 
 pois conterá informações importantes sobre o banco de dados e da geração de hash de senha do usuário).
@@ -39,28 +43,26 @@ module.exports = {
 Após configurar o arquivo **.env** basta rodar as migrations para criar as entidades no banco de dados.
 Para isto, utilizamos o [Knex](https://knexjs.org/).
 
-Basta abrir o prompt de comando na raiz do projeto backend, e instalar a dependencia do **knex** globalmente: `npm install knex -g`
+Basta rodar o comando `knex migrate:latest` e todas as entidades utilizadas pela aplicação serão criadas.
 
-Após instalado, basta rodar o comando `knex migrate:latest`, com este comando, todas as entidades utilizadas pela aplicação serão criadas.
+Por padrão, esta sendo utilizada o ip e porta `localhost:3000` (o ip e porta podem ser alterados no arquivo `\backend\index.js`).
 
-Para executar o projeto, basta executar os comandos:
-
-`npm install`
-   
+#### Para executar o projeto, basta executar o seguinte comando na raiz do projeto backend: 
 `npm start`
 
-Por padrão, esta sendo utilizada o ip `localhost:3000` (o ip pode ser alterado no arquivo `\backend\global\global.js`, e a porta pode ser alterada no arquivo `\backend\index.js`).
+----------------------------------------------------------------------------------------------------------------------------------------
 
 ## Frontend
-Antes de executar o frontend, precisamos alterar a propiedade `baseApiUrl` dentro do arquivo `\frontend\src\global.js`, esta propiedade seta a url do **backend** (caso esteja executando o backend com o ip localhost, basta setar o localhost aqui também).
 
-Para executar o projeto, basta executar os seguintes comandos na raiz do projeto frontend:
-
+#### Para baixar as dependências do projeto(frontend), basta executar o seguinte comando dentro da pasta `\frontend`:
 `npm install`
-   
+#### Para executar o projeto, basta executar o seguinte comando na raiz do projeto frontend: 
 `npm run serve`
 
 Para acessar a aplicação, basta acessar o endereço `http://localhost:8080`, criar um login e senha e entrar.
 
-Observação: Para criar o primeiro usuário admin é necessário setá-lo diretamente via banco de dados, basta fazer um select na entidade `usuario` e alterar a coluna `admin` para **true**, a partir dai, todos os outros usuários que precisem ser admins podem ser setados na própia aplicação (dentro do cadastro de usuários).
+Observação: Para criar o primeiro usuário admin do sistema é necessário, primeiro cadastrá-lo via aplicação, depois ir até o banco de dados, fazer um select na entidade `usuario` e alterar a coluna `admin` para **true**, a partir dai, todos os outros usuários que precisem de acesso admin, podem ser setados na própia aplicação, na tela de cadastro de usuários (seção administrativa).
+
+#### Alterar configuração de Ip/Porta (conexão com o backend): 
+Basta alterar a constante `baseApiUrl` do arquivo `\frontend\src\global.js`, esta propiedade seta a url do **backend**.
 
