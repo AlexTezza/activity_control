@@ -105,7 +105,8 @@
                                         id="search-tarefa"
                                         type="number"
                                         v-model="search.tarefa"
-                                        placeholder="Nº Task do Redmine..." />
+                                        placeholder="Nº Task do Redmine..."
+                                        @keyup.native.enter="onEnter" />
                                 </b-form-group>
                             </div>
                             <div class="rcol-12 col-md-8">
