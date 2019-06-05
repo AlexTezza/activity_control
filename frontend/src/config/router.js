@@ -3,6 +3,7 @@ import VueRouter from 'vue-router'
 
 import Home from '@/components/home/Home'
 import Atividade from '@/components/atividade/Atividade'
+import Configuracao from '@/components/configuracao/Configuracao'
 import AdminPages from '@/components/admin/AdminPages'
 import ArticlesByCategory from '@/components/article/ArticlesByCategory'
 import ArticleById from '@/components/article/ArticleById'
@@ -20,6 +21,11 @@ const routes = [{
     name: 'atividade',
     path: '/atividade',
     component: Atividade,
+    meta: { requiresAdmin: false }
+}, {
+    name: 'configuracao',
+    path: '/configuracao',
+    component: Configuracao,
     meta: { requiresAdmin: false }
 }, {
     name: 'adminPages',

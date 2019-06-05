@@ -11,11 +11,25 @@ module.exports = app => {
         .post(admin(app.api.usuario.save))
         .get(admin(app.api.usuario.get))
 
+    app.route('/redmines')
+        .all(app.config.passport.authenticate())
+        .post(admin(app.api.redmine.save))
+        .get(app.api.redmine.get)
+
     app.route('/usuarios/:id')
         .all(app.config.passport.authenticate())
         .put(admin(app.api.usuario.save))
         .get(admin(app.api.usuario.getById))
         .delete(admin(app.api.usuario.remove))
+
+    app.route('/redmines/:id')
+        .all(app.config.passport.authenticate())
+        .put(admin(app.api.redmine.save))
+        .get(app.api.redmine.getById)
+
+    app.route('/configuracoes/:id')
+        .all(app.config.passport.authenticate())
+        .put(app.api.configuracao.update)
 
     app.route('/departamento')
         .all(app.config.passport.authenticate())
@@ -61,11 +75,14 @@ module.exports = app => {
         .put(app.api.atividade.save)
         .delete(app.api.atividade.remove)
 
+    app.route('/redmine/sync/:id') // TEMP - REMOVER
+        .all(app.config.passport.authenticate()) // TEMP - REMOVER
+        .post(app.api.redmine.sync) // TEMP - REMOVER
+
     app.route('/atividades/search/:page/:idUsuario/:tarefa/:descricao/:idTipoAtividade/:dataDe/:dataAte')
         .all(app.config.passport.authenticate())
         .get(app.api.atividade.search)
 
-    
     app.route('/dashboard/user/:idUsuario/:dataDe/:dataAte')
         .all(app.config.passport.authenticate())
         .get(app.api.dashboard.searchHoursByActivityType)

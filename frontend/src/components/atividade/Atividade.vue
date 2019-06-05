@@ -171,13 +171,20 @@
                 </b-collapse>
             </b-card>
             <hr>
-            <b-table hover striped responsive :items=atividades :fields=fields>
-                <template slot="actions" slot-scope="data">
+            <b-table small hover striped responsive :items=atividades :fields=fields>
+                <template slot="editar" slot-scope="data">
                     <b-button variant="warning" @click="loadAtividade(data.item)" class="mr-2">
                         <i class="fa fa-pencil"></i>
                     </b-button>
-                    <b-button variant="danger" @click="loadAtividade(data.item, 'remove')">
+                </template>
+                <template slot="excluir" slot-scope="data">
+                    <b-button variant="danger" @click="loadAtividade(data.item, 'remove')" class="mr-2">
                         <i class="fa fa-trash"></i>
+                    </b-button>
+                </template>
+                <template slot="sync" slot-scope="data">
+                    <b-button v-if="data.item.tarefa !== null && data.item.tarefa !== ''" variant="info" @click="syncAtividade(data.item)" class="mr-2">
+                        <i class="fa fa-retweet"></i>
                     </b-button>
                 </template>
             </b-table>
@@ -249,7 +256,9 @@ export default {
                 { key: 'horaFim', label: 'Hora fim', sortable: true },
                 { key: 'duracao', label: 'Duração', sortable: true,
                     formatter: value => `${value} minuto(s)` },
-                { key: 'actions', label: 'Ações' }
+                { key: 'editar', label: 'Editar' },
+                { key: 'excluir', label: 'Excluir' },
+                { key: 'sync', label: 'Sync' }
             ]
         }
     },
@@ -265,6 +274,14 @@ export default {
         }
     },
     methods: {
+        syncAtividade(atividade) {
+            const url = `${baseApiUrl}/atividades/sync/${atividade.id}`
+            axios.post(url).then(res => {
+                this.$toasted.success('Sincronizado com sucesso!', {icon: 'check'});
+            }).catch(error => {
+                this.$toasted.error(error);
+            })
+        },
         loadAtividades() {
             const url = `${baseApiUrl}/atividade?page=${this.page}&usuario=${this.usuarioLogado.id}`
             axios.get(url).then(res => {

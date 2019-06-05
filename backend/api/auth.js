@@ -24,6 +24,9 @@ module.exports = app => {
             nome: usuario.nome,
             email: usuario.email,
             admin: usuario.admin,
+            redmineId: usuario.redmineId,
+            redmineApiKey: usuario.redmineApiKey,
+            redmineAllowSync: usuario.redmineAllowSync,
             iat: now,
             // 1 dia para expirar token
             exp: now + (60 * 60 * 24 * 1)
