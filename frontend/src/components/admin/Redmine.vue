@@ -127,7 +127,6 @@ export default {
             } else {
                 this.$toasted.show('URL inválida', {type: 'error', icon: 'times'});
             }
-
         },
         reset() {
             this.mode = 'save'

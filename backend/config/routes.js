@@ -16,6 +16,15 @@ module.exports = app => {
         .post(admin(app.api.redmine.save))
         .get(app.api.redmine.get)
 
+    app.route('/redmineActivities')
+        .all(app.config.passport.authenticate())
+        .get(admin(app.api.redmineActivities.get))
+
+    app.route('/deParaAtividades')
+        .all(app.config.passport.authenticate())
+        .get(admin(app.api.redmineActivitiesTipoAtividade.get))
+        .post(admin(app.api.redmineActivitiesTipoAtividade.save))
+
     app.route('/usuarios/:id')
         .all(app.config.passport.authenticate())
         .put(admin(app.api.usuario.save))
