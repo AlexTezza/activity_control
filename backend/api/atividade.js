@@ -1,5 +1,12 @@
-﻿module.exports = app => {
+﻿const Redmine = require('node-redmine');
+
+module.exports = app => {
     const { existsOrError, notExistsOrError, objectContainsIdOrErro, validateHourStartEnd, validateTask } = app.api.validation
+    const INSERT = 'insert';
+    const REPLACE = 'replace';
+    const UPDATE = 'update';
+    const REMOVE = 'remove';
+    const ERROR = 'error';
 
     const save = async (req, res) => {
         const atividade = { ...req.body }
@@ -41,24 +48,214 @@
         }
 
         if (atividade.id) {
+            const oldDbAtividade = await app.db('atividade').where({id: atividade.id}).first();
+
             app.db('atividade')
-            .update(atividade)
-            .where({ id: atividade.id })
-            .then(_ => res.status(204).send())
-            .catch(err => res.status(500).send(err))
+                .update(atividade)
+                .where({ id: atividade.id })
+                .then(() => syncWithRedmine(oldDbAtividade, atividade, res))
+                .catch(err => {
+                    return res.status(500).send(err);
+                });
         } else {
             app.db('atividade')
                 .insert(atividade)
-                .then(_ => res.status(204).send())
-                .catch(err => res.status(500).send(err))
+                .returning('id')
+                .then(id => {
+                    atividade.id = id[0];
+                    return syncWithRedmine(null, atividade, res);
+                })
+                .catch(err => {
+                    return res.status(500).send(err);
+                });
         }
+    }
+
+    const syncWithRedmine = async (oldAtividade, atividade, res) => {
+        const action = getSyncAction(oldAtividade, atividade);
+
+        if (!action) {
+            return res.status(201).send();
+        }
+
+        const {redmineId, redmineApiKey, redmineAllowSync} = await app.db('usuario')
+            .select('redmineApiKey','redmineId','redmineAllowSync')
+            .where({id: atividade.idUsuario})
+            .first()
+            .then(response => {
+                return {
+                    redmineId: response.redmineId,
+                    redmineApiKey: response.redmineApiKey,
+                    redmineAllowSync: response.redmineAllowSync,
+                };
+            })
+            .catch(e => {
+                console.log(e);
+            })
+
+        if (!redmineAllowSync) {
+            return res.status(201).send();
+        }
+
+        const {url} = await app.db('redmine')
+            .select('url')
+            .where({id: redmineId})
+            .first()
+            .catch(e => {
+                console.log(e);
+            });
+
+        const redmine = new Redmine(url, {apiKey: redmineApiKey})
+        const activity_id = await getActivityId(atividade.idTipoAtividade, redmineId)
+
+        switch(action) {
+            case INSERT:
+                const time_entry = {
+                    time_entry: {
+                        issue_id: atividade.tarefa,
+                        spent_on: atividade.data.substr(0,10),
+                        activity_id,
+                        comments: atividade.descricao,
+                        hours: atividade.duracao / 60
+                    }
+                };
+
+                return redmine.create_time_entry(time_entry, (err, data) => {
+                    if (err) {
+                        console.log(err);
+                        return res.status(500).send(err);
+                    }
+                    return app.db('atividade')
+                        .update({
+                            redmineTaskId: data.time_entry.id
+                        })
+                        .where({id: atividade.id})
+                        .then(res.status(201).send())
+                        .catch(error => {
+                            console.log(error);
+                            return res.status(500).send(error);
+                        });
+                });
+
+            case REPLACE:
+                const another_time_entry = {
+                    time_entry: {
+                        issue_id: atividade.tarefa,
+                        spent_on: atividade.data.substr(0,10),
+                        activity_id,
+                        comments: atividade.descricao,
+                        hours: atividade.duracao / 60
+                    }
+                };
+
+                return redmine.delete_time_entry(atividade.redmineTaskId, (e, data) => {
+                    if (e) {
+                        console.log(e);
+                        return res.status(500).send(err);
+                    }
+                    return redmine.create_time_entry(another_time_entry, (err, data) => {
+                        if (err) {
+                            console.log(err);
+                            return res.status(500).send(err);
+                        }
+                        return app.db('atividade')
+                            .update({
+                                redmineTaskId: data.time_entry.id
+                            })
+                            .where({id: atividade.id})
+                            .then(res.status(201).send())
+                            .catch(error => {
+                                console.log(error);
+                                return res.status(500).send(error);
+                            });
+                    });
+                });
+
+            case UPDATE:
+                const updated_time_entry = {
+                    time_entry: {
+                        issue_id: atividade.tarefa,
+                        spent_on: atividade.data.substr(0,10),
+                        activity_id,
+                        comments: atividade.descricao,
+                        hours: atividade.duracao / 60
+                    }
+                };
+
+                return redmine.update_time_entry(atividade.redmineTaskId, updated_time_entry, (err, data) => {
+                    if (err) {
+                        console.log(err);
+                        return res.status(500).send(err);
+                    }
+                    return res.status(201).send();
+                });
+
+            case REMOVE:
+                return redmine.delete_time_entry(atividade.redmineTaskId, (err, data) => {
+                    if (err) {
+                        console.log(err);
+                        return res.status(500).send(err);
+                    }
+                    return app.db('atividade')
+                        .update({
+                            redmineTaskId: null
+                        })
+                        .where({id: atividade.id})
+                        .then(res.status(201).send())
+                        .catch(error => {
+                            console.log(error);
+                            return res.status(500).send(error);
+                        });
+                });
+            default:
+                return res.status(500).send(err);
+        }
+    }
+
+    function getSyncAction(oldAtividade, atividade) {
+        const {tarefa: oldTarefa} = oldAtividade || {};
+        const {tarefa} = atividade;
+
+        if (!oldAtividade) {
+            if (tarefa) {
+                return INSERT;
+            } else {
+                return null;
+            }
+        } else {
+            if (!oldTarefa && !tarefa) {
+                return null;
+            }
+            if (oldTarefa && tarefa && oldTarefa !== tarefa) {
+                return REPLACE;
+            }
+            if (oldTarefa && tarefa && oldTarefa === tarefa) {
+                return UPDATE;
+            }
+            if (oldTarefa && !tarefa) {
+                return REMOVE;
+            }
+            return ERROR;
+        }
+    }
+
+    function getActivityId(idTipoAtividade, redmineId) {
+        return app.db('redmineActivities')
+            .select('activityExternalId')
+            .join('redmineActivities_tipoAtividade', 'redmineActivities_tipoAtividade.redmineActivitiesId', 'redmineActivities.id')
+            .whereRaw(`"redmineActivities"."redmineId" = ${redmineId} AND "redmineActivities_tipoAtividade"."tipoAtividadeId" = ${idTipoAtividade}`)
+            .first()
+            .then(res => res.activityExternalId)
+            .catch(e => {
+                console.log(e);
+            });
     }
 
     const remove = async (req, res) => {
         try {
             const rowsDeleted = await app.db('atividade')
                 .where({ id: req.params.id }).del()
-            
+
             try {
                 existsOrError(rowsDeleted, 'Tipo Atividade não foi encontrado.')
             } catch(msg) {
@@ -80,7 +277,7 @@
         const count = await getGetCount(idUsuario)
 
         app.db({ a: 'atividade', ta: 'tipoAtividade' })
-            .select('a.id', 'a.idUsuario', 'a.horaInicio', 'a.horaFim', 'a.duracao', 'a.tarefa', 'a.descricao', 'a.data',
+            .select('a.id', 'a.idUsuario', 'a.horaInicio', 'a.horaFim', 'a.duracao', 'a.tarefa', 'a.descricao', 'a.data', 'a.redmineTaskId',
                 { idTipoAtividade: 'ta.id', tipoAtividadeDescricao: 'ta.descricao' } )
             .limit(limit).offset(page * limit - limit)
             .where({'a.idUsuario': idUsuario}) // Filtro por usuário
@@ -114,13 +311,11 @@
 
     const search = async (req, res) => {
         const page = req.params.page || 1
-        
         const count = await getSearchCount(req)
-        
         const amount = await getAmountDuracao(req)
 
         app.db({ a: 'atividade', ta: 'tipoAtividade' })
-            .select('a.id', 'a.idUsuario', 'a.horaInicio', 'a.horaFim', 'a.duracao', 'a.tarefa', 'a.descricao', 'a.data', { idTipoAtividade: 'ta.id', tipoAtividadeDescricao: 'ta.descricao' } )
+            .select('a.id', 'a.idUsuario', 'a.horaInicio', 'a.horaFim', 'a.duracao', 'a.tarefa', 'a.descricao', 'a.data', 'a.redmineTaskId', { idTipoAtividade: 'ta.id', tipoAtividadeDescricao: 'ta.descricao' } )
             .modify(function(queryBuilder) {
                 if (req.params.idUsuario && req.params.idUsuario != 'null') {
                     queryBuilder.where({ 'a.idUsuario': req.params.idUsuario })
@@ -134,7 +329,7 @@
                 if (req.params.idTipoAtividade && req.params.idTipoAtividade != 'null') {
                     queryBuilder.andWhere({ 'a.idTipoAtividade': req.params.idTipoAtividade })
                 }
-                if ((req.params.dataDe && req.params.dataDe != 'null') 
+                if ((req.params.dataDe && req.params.dataDe != 'null')
                     && (req.params.dataAte && req.params.dataAte != 'null')) {
 
                     queryBuilder.whereBetween( 'a.data', [req.params.dataDe, req.params.dataAte] )
@@ -172,13 +367,13 @@
 
     async function getGetCount(idUsuario) {
         const result = await app.db('atividade')
-            .where({'idUsuario': idUsuario}) 
+            .where({'idUsuario': idUsuario})
             .count('id')
             .first()
         return parseInt(result.count)
     }
 
-    async function getSearchCount(req) { 
+    async function getSearchCount(req) {
         const result = await app.db('atividade')
             .modify(function(queryBuilder) {
                 if (req.params.idUsuario && req.params.idUsuario != 'null') {
@@ -193,7 +388,7 @@
                 if (req.params.idTipoAtividade && req.params.idTipoAtividade != 'null') {
                     queryBuilder.where({ idTipoAtividade: req.params.idTipoAtividade })
                 }
-                if ((req.params.dataDe && req.params.dataDe != 'null') 
+                if ((req.params.dataDe && req.params.dataDe != 'null')
                     && (req.params.dataAte && req.params.dataAte != 'null')) {
 
                     queryBuilder.whereBetween( 'data', [req.params.dataDe, req.params.dataAte] )
@@ -205,7 +400,7 @@
                         queryBuilder.andWhere({ 'data': req.params.dataAte })
                     }
                 }
-            }) 
+            })
             .count('id')
             .first()
         return parseInt(result.count)
@@ -226,7 +421,7 @@
                 if (req.params.idTipoAtividade && req.params.idTipoAtividade != 'null') {
                     queryBuilder.where({ idTipoAtividade: req.params.idTipoAtividade })
                 }
-                if ((req.params.dataDe && req.params.dataDe != 'null') 
+                if ((req.params.dataDe && req.params.dataDe != 'null')
                     && (req.params.dataAte && req.params.dataAte != 'null')) {
 
                     queryBuilder.whereBetween( 'data', [req.params.dataDe, req.params.dataAte] )
@@ -238,7 +433,7 @@
                         queryBuilder.andWhere({ 'data': req.params.dataAte })
                     }
                 }
-            }) 
+            })
             .sum('duracao')
             .first()
 
