@@ -1,26 +1,58 @@
 <template>
     <div class="page-title">
-        <h1><i v-if="icon" :class="icon"></i> {{ main }}</h1>
-        <h2>{{ sub }}</h2>
-        <hr>
+        <b-container fluid>
+            <b-row>
+                <div class="icon-container pl-2">
+                    <i class="icon" v-if="icon" :class="icon"></i>
+                </div>
+                <b-col cols="8">
+                    <h5>
+                        {{ main }}
+                    </h5>
+                    <h6>{{ sub }}</h6>
+                </b-col>
+                <b-col class="button-action" v-if="showButton">
+                    <b-button
+                        id="add-activity-button"
+                        variant="primary"
+                        @click="action">
+                        {{textButton}}
+                    </b-button>
+                    <b-tooltip ref="tooltip" target="add-activity-button" placement="bottomleft">
+                        {{textTooltipButton}}
+                    </b-tooltip>
+                </b-col>
+            </b-row>
+        </b-container>
     </div>
 </template>
 
 <script>
 export default {
     name: 'PageTitle',
-    props: ['icon', 'main', 'sub']
+    props: ['icon', 'main', 'sub', 'showButton', 'action', 'textButton', 'textTooltipButton'],
 }
 </script>
 
 <style>
-    .page-title h1 {
-        margin: 0px;
+    .page-title {
+        background-color: #fff;
+        width: 100%;
+        padding: 5px 10px 5px 10px;
+        box-shadow: 0 6px 6px -6px gray;
     }
 
-    .page-title h2 {
-        color: #777;
-        margin-top: 5px;
-        font-size: 1.3rem;
+    .button-action {
+        text-align: end;
+        align-self: center
+    }
+
+    .icon-container {
+        align-content: center;
+        align-self: center;
+    }
+
+    .icon {
+        font-size: 32px;
     }
 </style>

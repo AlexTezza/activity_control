@@ -23,7 +23,7 @@ export default {
     },
     computed: {
         icon() {
-            return this.$store.state.isMenuVisible ? "fa-angle-left" : "fa-angle-right"
+            return this.$store.state.isMenuVisible ? "fa-angle-left" : "fa-bars"
         }
     },
     methods: {
@@ -38,7 +38,6 @@ export default {
     .header {
         grid-area: header;
         background: linear-gradient(to right, #1e469a, #4474b3);
-
         display: flex;
         justify-content: center;
         align-items: center;
@@ -68,7 +67,6 @@ export default {
         color: #fff;
         justify-self: flex-start;
         text-decoration: none;
-
         display: flex;
         justify-content: center;
         align-items: center;
@@ -77,5 +75,6 @@ export default {
     header.header > a.toggle:hover {
         color: #fff;
         background-color: rgba(0, 0, 0, 0.2);
+        cursor: pointer;
     }
 </style>
