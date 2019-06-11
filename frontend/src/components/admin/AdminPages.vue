@@ -14,6 +14,9 @@
                     <b-tab title="Usuário -> Departamento">
                         <UsuarioDepartamento />
                     </b-tab>
+                    <b-tab title="Função">
+                        <Funcao />
+                    </b-tab>
                     <b-tab title="Tipo atividade">
                         <TipoAtividade />
                     </b-tab>
@@ -27,12 +30,13 @@
 import PageTitle from '../template/PageTitle'
 import Usuario from './Usuario'
 import Departamento from './Departamento'
+import Funcao from './Funcao'
 import TipoAtividade from './TipoAtividade'
 import UsuarioDepartamento from './UsuarioDepartamento'
 
 export default {
     name: 'AdminPages',
-    components: { PageTitle, Departamento, Usuario, TipoAtividade, UsuarioDepartamento }
+    components: { PageTitle, Departamento, Usuario, Funcao, TipoAtividade, UsuarioDepartamento }
 }
 </script>
 

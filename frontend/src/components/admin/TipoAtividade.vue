@@ -4,7 +4,7 @@
             sub="Cadastro de Tipo Atividade" />
         <div class="tipo-atividade-form-cadastro">
             <b-form-row>
-                <div class="col-12 col-md-9">
+                <div class="col-12 col-md-6">
                     <input id="tipo-atividade-id" type="hidden" v-model="tipoAtividade.id" />
                     <b-form-group label="Descricao: *" label-for="tipo-atividade-descricao">
                         <b-form-input 
@@ -13,6 +13,25 @@
                             type="text"
                             v-model="tipoAtividade.descricao" required
                             placeholder="Informe a Descrição..." />
+                    </b-form-group>
+                </div>
+
+                <div class="col-12 col-md-3">
+                    <b-form-group label="Função: *" label-for="tipo-atividade-funcao">
+                        <b-form-select v-if="mode === 'save'"
+                            id="tipo-atividade-funcao"
+                            :options="funcoes"
+                            v-model="tipoAtividade.funcao.id">
+
+                            <template slot="first">
+                                <option first :value="null">-- Selecione --</option>
+                            </template>
+                        </b-form-select>
+
+                        <b-form-input v-else
+                            id="tipo-atividade-funcao" type="text"
+                            v-model="tipoAtividade.funcao.descricao"
+                            readonly />
                     </b-form-group>
                 </div>
 
@@ -61,6 +80,10 @@ import axios from 'axios'
 
 const initialTipoAtividade = {
     descricao: "",
+    funcao: {
+        value: null,
+        text: ""
+    },
     sigla: ""
 }
 
@@ -72,11 +95,13 @@ export default {
             mode: 'save',
             tipoAtividade: { ...initialTipoAtividade },
             tipoAtividades: [],
+            funcoes: [],
             page: 1,
             limit: 0,
             count: 0,
             fields: [
                 { key: 'descricao', label: 'Descrição', sortable: true },
+                { key: 'funcao.descricao', label: 'Funcão', sortable: true },
                 { key: 'sigla', label: 'Sigla', sortable: true },
                 { key: 'actions', label: 'Ações' }
             ]
@@ -119,7 +144,15 @@ export default {
             this.mode = 'save'
             this.tipoAtividade = { ...initialTipoAtividade }
             this.loadTipoAtividades()
-        }
+        },
+        loadFuncoes() {
+            const url = `${baseApiUrl}/funcao`
+            axios.get(url).then(res => {
+                this.funcoes = res.data.data.map(funcao => {
+                    return { value: funcao.id, text: funcao.descricao }
+                })
+            })
+        },
     },
     watch: {
         page() {
@@ -128,6 +161,7 @@ export default {
     },
     mounted() {
         this.loadTipoAtividades()
+        this.loadFuncoes()
     }
 }
 </script>

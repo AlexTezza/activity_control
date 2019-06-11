@@ -8,6 +8,9 @@ module.exports = app => {
             tipoAtividade.id = req.params.id
         }
 
+        tipoAtividade.idFuncao = tipoAtividade.funcao.id;
+        delete tipoAtividade.funcao
+
         try {
             existsOrError(tipoAtividade.descricao, 'Descrição não informada')
             existsOrError(tipoAtividade.sigla, 'Sigla não informada')
@@ -62,11 +65,43 @@ module.exports = app => {
             .first()
         const count = parseInt(result.count)
 
-        app.db('tipoAtividade')
-            .select('id', 'descricao', 'sigla')
+        app.db({ ta: 'tipoAtividade', f: 'funcao'})
+            .select('ta.id', 'ta.descricao', 'ta.idFuncao', 'ta.sigla',
+                { descricaoFuncao: 'f.descricao' })
+            .whereRaw('?? = ??', ['f.id', 'ta.idFuncao'])
             .limit(limit).offset(page * limit - limit)
             .orderBy('descricao')
+            .then(tipoAtividades => tipoAtividades.map(tipoAtividade => {
+                tipoAtividade.funcao = {
+                    id: tipoAtividade.idFuncao,
+                    descricao: tipoAtividade.descricaoFuncao
+                }
+
+                delete tipoAtividade.descricaoFuncao
+
+                return tipoAtividade
+            }))
             .then(tipoAtividades => res.json({data: tipoAtividades, count, limit}))
+            .catch(err => res.status(500).send(err))
+    }
+
+    const getAll = async (req, res) => {
+        app.db({ ta: 'tipoAtividade', f: 'funcao'})
+            .select('ta.id', 'ta.descricao', 'ta.idFuncao', 'ta.sigla',
+                { descricaoFuncao: 'f.descricao' })
+            .whereRaw('?? = ??', ['f.id', 'ta.idFuncao'])
+            .orderBy('descricao')
+            .then(tipoAtividades => tipoAtividades.map(tipoAtividade => {
+                tipoAtividade.funcao = {
+                    id: tipoAtividade.idFuncao,
+                    descricao: tipoAtividade.descricaoFuncao
+                }
+
+                delete tipoAtividade.descricaoFuncao
+
+                return tipoAtividade
+            }))
+            .then(tipoAtividades => res.json(tipoAtividades))
             .catch(err => res.status(500).send(err))
     }
 
@@ -77,5 +112,5 @@ module.exports = app => {
             .catch(err => res.status(500).send(err))
     }
 
-    return { save, remove, get, getById }
+    return { save, remove, get, getAll, getById }
 }
