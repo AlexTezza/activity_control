@@ -1,73 +1,97 @@
 <template>
     <div class="departamento-form">
-        <PageTitle icon="" main=""
-            sub="Cadastro de Departamento" />
+        <label style="font-weight:bold">
+            Cadastro de departamento
+        </label>
         <div class="departamento-form-cadastro">
             <b-form-row>
                 <div class="col-12 col-md-6">
                     <input id="departamento-id" type="hidden" v-model="departamento.id" />
                     <b-form-group label="Descricao: *" label-for="departamento-descricao">
-                        <b-form-input 
+                        <b-form-input
                             :readonly="mode === 'remove'"
-                            id="departamento-descricao" 
+                            id="departamento-descricao"
                             type="text"
-                            v-model="departamento.descricao" required
-                            placeholder="Informe a Descrição..." />
+                            v-model="departamento.descricao"
+                            placeholder="Informe a Descrição..."
+                            required />
                     </b-form-group>
                 </div>
-
                 <div class="col-12 col-md-2">
                     <input id="departamento-sigla" type="hidden" v-model="departamento.sigla" />
                     <b-form-group label="Sigla: *" label-for="departamento-sigla">
-                        <b-form-input 
+                        <b-form-input
                             :readonly="mode === 'remove'"
-                            id="departamento-sigla" 
+                            id="departamento-sigla"
                             type="text"
-                            v-model="departamento.sigla" required
-                            placeholder="Informe a sigla..." />
+                            v-model="departamento.sigla"
+                            placeholder="Informe a sigla..."
+                            required />
                     </b-form-group>
                 </div>
-
                 <div class="col-12 col-md-4">
                     <b-form-group label="Responsável: *" label-for="departamento-usuario">
                         <b-form-select v-if="mode === 'save'"
                             id="departamento-usuario"
                             :options="usuarios"
                             v-model="departamento.usuario.id">
-
                             <template slot="first">
-                                <option first :value="null">-- Selecione --</option>
+                                <option first :value="null">
+                                    -- Selecione --
+                                </option>
                             </template>
                         </b-form-select>
                         <b-form-input v-else
-                            id="departamento-usuario" type="text"
+                            id="departamento-usuario"
+                            type="text"
                             v-model="departamento.usuario.nome"
                             readonly />
                     </b-form-group>
                 </div>
-
-                <div class="col-12 col-md-12">
-                    <b-button variant="primary" v-if="mode === 'save'"
-                        @click="save">Salvar</b-button>
-                    <b-button variant="danger" v-if="mode === 'remove'"
-                        @click="remove">Excluir</b-button>
-                    <b-button class="ml-2" @click="reset">Cancelar</b-button>
+                <div class="col-12 col-md-12 text-right">
+                    <b-button @click="reset">Cancelar</b-button>
+                    <b-button
+                        class="ml-2"
+                        variant="primary" v-if="mode === 'save'"
+                        @click="save">
+                        Salvar
+                    </b-button>
+                    <b-button
+                        class="ml-2"
+                        variant="danger"
+                        v-if="mode === 'remove'"
+                        @click="remove">
+                        Excluir
+                    </b-button>
                 </div>
             </b-form-row>
-            <hr>
-            <b-table hover striped responsive :items=departamentos :fields=fields res>
-                <template slot="actions" slot-scope="data">
-                    <b-button variant="warning" @click="loadDepartamento(data.item)" class="mr-2">
-                        <i class="fa fa-pencil"></i>
-                    </b-button>
-                    <b-button variant="danger" @click="loadDepartamento(data.item, 'remove')">
-                        <i class="fa fa-trash"></i>
-                    </b-button>
-                </template>
-            </b-table>
-            <b-pagination size="md" v-model="page" :total-rows="count" :per-page="limit">
-
-            </b-pagination>
+            <div class="pt-4">
+                <b-table :items=departamentos :fields=fields hover striped responsive small outlined>
+                    <template slot="editar" slot-scope="data">
+                        <b-button
+                            variant="outline-primary"
+                            @click="loadDepartamento(data.item)"
+                            v-b-tooltip.hover title="Editar departamento">
+                            <i class="fa fa-pencil"></i>
+                        </b-button>
+                    </template>
+                    <template slot="remover" slot-scope="data">
+                        <b-button
+                            variant="outline-danger"
+                            @click="loadDepartamento(data.item, 'remove')"
+                            title="Remover departamento"
+                            v-b-tooltip.hover>
+                            <i class="fa fa-trash"></i>
+                        </b-button>
+                    </template>
+                </b-table>
+                <b-pagination
+                    size="md"
+                    v-model="page"
+                    :total-rows="count"
+                    :per-page="limit">
+                </b-pagination>
+            </div>
         </div>
     </div>
 </template>
@@ -102,7 +126,8 @@ export default {
                 { key: 'descricao', label: 'Descrição', sortable: true },
                 { key: 'sigla', label: 'Sigla', sortable: true },
                 { key: 'usuario.nome', label: 'Responsável', sortable: true },
-                { key: 'actions', label: 'Ações' }
+                { key: 'editar', label: 'Editar', class: 'text-center'},
+                { key: 'remover', label: 'Remover', class: 'text-center'},
             ]
         }
     },
@@ -165,7 +190,3 @@ export default {
     }
 }
 </script>
-
-<style>
-
-</style>
