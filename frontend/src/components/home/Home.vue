@@ -12,14 +12,14 @@
         <div v-else class="admin-pages-tabs">
             <b-card no-body>
                 <b-tabs card>
-                    <b-tab title="Eu">
+                    <b-tab title="Meus indicadores">
                         <b-form-row>
                             <div class="chart-view">
                                 <Charts />
                             </div>
                         </b-form-row>
                     </b-tab>
-                    <b-tab title="Geral">
+                    <b-tab title="Indicador Colaboradores">
                         <b-form-row>
                             <div class="chart-view">
                                 <ColaboratorsChart />

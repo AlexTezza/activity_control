@@ -1,5 +1,5 @@
 <template>
-	<div>
+	<div class="template">
 		<b-card>
 			<b-form-row id="indicator">
 				<div class="rcol-12 col-md-3">
@@ -32,13 +32,13 @@
 		<br>
 
 		<b-card-group deck>
-			<b-card style="max-height: 500px">
+			<b-card>
 				<h3>Total de horas por tipo de atividade</h3>
-				<apexchart width="60%" type="bar" :options="chartBarOptions" :series="barSeries"></apexchart>
+				<apexchart width="80%" type="bar" :options="chartBarOptions" :series="barSeries"></apexchart>
 			</b-card>
-			<b-card style="max-height: 500px">
+			<b-card>
 				<h3>Percentual de horas por tipo de atividade</h3>
-				<apexchart width="60%" type="donut" :options="chartDonutOptions" :series="donutSeries"></apexchart>
+				<apexchart width="80%" type="donut" :options="chartDonutOptions" :series="donutSeries"></apexchart>
 			</b-card>
 		</b-card-group>
 	</div>
@@ -48,6 +48,8 @@
 import axios from 'axios'
 import { baseApiUrl, userKey } from '@/global'
 import moment from 'moment'
+
+let totalHours = null;
 
 const initialSearch = {
     dataDe: moment().startOf('month').format('YYYY-MM-DD'),
@@ -66,7 +68,21 @@ function formatterTooltip(val) {
 		}
 		return hours + "h"
 	}
-	return ""
+	return "0h00min"
+}
+
+function minutesToHours(totalMinutes) {
+	let hours = Math.trunc(totalMinutes / 60)
+	let minutes = totalMinutes % 60
+
+	if (hours < 10) {
+		hours = `0${hours}`
+	}
+	if (minutes < 10) {
+		minutes = `0${minutes}`
+	}
+
+	return formatterTooltip(`${hours}.${minutes}`)
 }
 
 const defaultText = 'Nenhum dado para ser exibido'
@@ -77,21 +93,32 @@ export default {
 		return {
 			search : { ...initialSearch },
 			chartSerieName: [],
-
 			// Bar Chart
 			chartBarOptions: {
 				plotOptions: {
 					bar: {
 						horizontal: false,
-						columnWidth: '60%',
+						distributed: true,
+						dataLabels: {
+							position: 'top',
+						},
 					},
 				},
 				dataLabels: {
-					enabled: false
+					enabled: true,
+					offsetY: -20,
+					formatter: function(val) {
+						return formatterTooltip(val)
+					},
+					hideOverflowingLabels: false,
+					style: {
+						fontSize: '12px',
+						colors: ["#304758"]
+					}
 				},
 				stroke: {
 					show: true,
-					width: 2,
+					width: 6,
 					colors: ['transparent']
 				},
 				xaxis: {
@@ -139,11 +166,17 @@ export default {
 				},
 				plotOptions: {
 					pie: {
+						expandOnClick: true,
+						dataLabels: {
+							offset: 0,
+							minAngleToShowLabel: 2
+						}, 
 						donut: {
 							labels: {
 								show: true,
 								name: {
-									show: true
+									show: true,
+									color: '#304758',
 								},
 								value: {
 									show: true,
@@ -151,12 +184,12 @@ export default {
 										return formatterTooltip(val)
 									}
 								},
-								// total: {
-								// 	show: true,
-								// 	formatter: function(w) {
-								// 		return w
-								// 	}
-								// }
+								total: {
+									show: true,
+									formatter: function() {
+										return minutesToHours(totalHours)
+									}
+								}
 							}
 						}
 					}
@@ -184,6 +217,8 @@ export default {
 				this.chartBarData = []
 				// Clean the data of Donut Chart
 				this.chartDonutData = [0]
+				// Clean the total hour variable
+				totalHours = 0;
 
 				if (res.data && res.data.result && res.data.result.length > 0) {
 					this.chartSerieName = []
@@ -193,6 +228,7 @@ export default {
 						this.chartSerieName.push(element.name)
 						this.chartBarData.push(element.data)
 						this.chartDonutData.push(Number.parseFloat(element.data))
+						totalHours += Number.parseFloat(element.total)
 					});
 				}
 				this.chartBarOptions = {  xaxis: {  categories: this.chartSerieName  }}
@@ -204,7 +240,7 @@ export default {
 		},
 		resetSearch() {
             this.search = { ...initialSearch }
-        }
+		}
 	},
 	mounted() {
 		this.loadData();
@@ -213,6 +249,10 @@ export default {
 </script>
 
 <style>
+
+.template {
+	height: 100%;
+}
 
 .template-view {
 	display: flex;

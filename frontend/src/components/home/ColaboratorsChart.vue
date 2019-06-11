@@ -48,12 +48,9 @@
 						<th class="table-title" :colspan="fields.length">RELATÓRIO GERENCIAL</th>
 					</tr>
 					<tr>
-						<th class="month-title first-thrid-month" :colspan="fields.length">Janeiro</th>
+						<th class="month-title" :colspan="fields.length">Janeiro</th>
 					</tr>
 				</template>
-				<!-- <template slot="bottom-row">
-					<th class="table-title-total">Total geral mensal</th>
-				</template> -->
 			</b-table>
 
 			<hr>
@@ -69,6 +66,10 @@
 									<th>{{ item.total }}</th>
 								</tr>
 							</tbody>
+							<tr>
+								<th>Total de horas realizadas</th>
+								<th>25h43min</th>
+							</tr>
 						</table>
 					</b-card>
 					<b-card>
@@ -131,8 +132,7 @@ export default {
 				{ key : 10, label : "Desenvolvimento", total : "25h43min" },
 				{ key : 11, label : "Análise", total : "25h43min" },
 				{ key : 12, label : "Code Review", total : "25h43min" },
-				{ key : 13, label : "Request for proposal", total : "25h43min" },
-				{ key : 14, label : "Total de horas realizadas", total : "25h43min" }
+				{ key : 13, label : "Request for proposal", total : "25h43min" }
 			],
 			// Donut Chart
 			chartDonutOptions: {
@@ -185,23 +185,14 @@ export default {
 			})
 		},
 		loadData() {
-			// const url = `${baseApiUrl}/dashboard/user/${this.usuarioLogado.id}/${this.search.dataDe}/${this.search.dataAte}`
-			// axios.get(url).then(res => {
+			var startDate = moment([this.search.actualYear, this.search.actualMonth]);
+			const dateFrom = startDate.format('YYYY-MM-DD')
+			const dateUntil = moment(startDate).endOf('month').format('YYYY-MM-DD');
 
-			this.itemsTableGeral = [
-				{ id: 1, name: "Alberton Silva", BRK: "2h25min", AEP: "3h45min", FES: "5h34min", AMO: "5h34min", HFS: "1h29min", PIS: "0h", FOA: "2h25min", LIA: "3h45min", FEO: "5h34min", DEO: "5h34min", ANE: "1h29min", CRW: "0h", RFP: "3h45min" },
-				{ id: 2, name: "Alex Tezza", BRK: "2h25min", AEP: "3h45min", FES: "5h34min", AMO: "5h34min", HFS: "1h29min", PIS: "0h", FOA: "2h25min", LIA: "3h45min", FEO: "5h34min", DEO: "5h34min", ANE: "1h29min", CRW: "0h", RFP: "3h45min" },
-				{ id: 3, name: "Christian Surkamp", BRK: "2h25min", AEP: "3h45min", FES: "5h34min", AMO: "5h34min", HFS: "1h29min", PIS: "0h", FOA: "2h25min", LIA: "3h45min", FEO: "5h34min", DEO: "5h34min", ANE: "1h29min", CRW: "0h", RFP: "3h45min" },
-				{ id: 4, name: "Giovane Gottardo", BRK: "2h25min", AEP: "3h45min", FES: "5h34min", AMO: "5h34min", HFS: "1h29min", PIS: "0h", FOA: "2h25min", LIA: "3h45min", FEO: "5h34min", DEO: "5h34min", ANE: "1h29min", CRW: "0h", RFP: "3h45min" },
-				{ id: 5, name: "Iêda Brasil", BRK: "2h25min", AEP: "3h45min", FES: "5h34min", AMO: "5h34min", HFS: "1h29min", PIS: "0h", FOA: "2h25min", LIA: "3h45min", FEO: "5h34min", DEO: "5h34min", ANE: "1h29min", CRW: "0h", RFP: "3h45min" },
-				{ id: 6, name: "Letícia Taborda", BRK: "2h25min", AEP: "3h45min", FES: "5h34min", AMO: "5h34min", HFS: "1h29min", PIS: "0h", FOA: "2h25min", LIA: "3h45min", FEO: "5h34min", DEO: "5h34min", ANE: "1h29min", CRW: "0h", RFP: "3h45min" },
-				{ id: 7, name: "Rodrigo Santini", BRK: "2h25min", AEP: "3h45min", FES: "5h34min", AMO: "5h34min", HFS: "1h29min", PIS: "0h", FOA: "2h25min", LIA: "3h45min", FEO: "5h34min", DEO: "5h34min", ANE: "1h29min", CRW: "0h", RFP: "3h45min" },
-				{ id: 8, name: "Uriel Mello", BRK: "2h25min", AEP: "3h45min", FES: "5h34min", AMO: "5h34min", HFS: "1h29min", PIS: "0h", FOA: "2h25min", LIA: "3h45min", FEO: "5h34min", DEO: "5h34min", ANE: "1h29min", CRW: "0h", RFP: "3h45min" },
-				{ id: 9, name: "Vanesa Holdefer", BRK: "2h25min", AEP: "3h45min", FES: "5h34min", AMO: "5h34min", HFS: "1h29min", PIS: "0h", FOA: "2h25min", LIA: "3h45min", FEO: "5h34min", DEO: "5h34min", ANE: "1h29min", CRW: "0h", RFP: "3h45min" },
-				{ id: 10, name: "Vitor Cervelin", BRK: "2h25min", AEP: "3h45min", FES: "5h34min", AMO: "5h34min", HFS: "1h29min", PIS: "0h", FOA: "2h25min", LIA: "3h45min", FEO: "5h34min", DEO: "5h34min", ANE: "1h29min", CRW: "0h", RFP: "3h45min" },
-			]
-
-            // })
+			const url = `${baseApiUrl}/colaborators-chart/${dateFrom}/${dateUntil}`
+			axios.get(url).then(res => {
+				this.itemsTableGeral = res.data
+			})
 		},
 		resetSearch() {
             this.search = { ...initialSearch }
@@ -214,22 +205,6 @@ export default {
 			.then(function(response){
 				vm.fields = response.data
 		})
-		// return [
-		// 	{ key : "name", label : "" },
-		// 	{ key: "FES", label: " Férias"},
-		// 	{ key: "ANE", label: "Análise"},
-		// 	{ key: "AMO", label: "Atestado médico"},
-		// 	{ key: "AEP", label: "Atividade externa pessoal"},
-		// 	{ key: "BRK", label: "Break"},
-		// 	{ key: "CRW", label: "Code Review"},
-		// 	{ key: "DEO", label: "Desenvolvimento"},
-		// 	{ key: "FEO", label: "Feriado"},
-		// 	{ key: "FOA", label: "Folga"},
-		// 	{ key: "HFS", label: "Horas Faturadas"},
-		// 	{ key: "LIA", label: "Licença"},
-		// 	{ key: "PIS", label: "Processos Internos"},
-		// 	{ key: "RFP", label: "Request for proposal"}
-		// ]
 	},
 	beforeMount() {
 		this.loadHeaders()
@@ -241,7 +216,7 @@ export default {
 <style>
 
 .table-hour-geral {
-  font-size: 0.9em;
+  font-size: 0.8em;
 }
 
 .table-title {
@@ -253,45 +228,12 @@ export default {
   vertical-align: middle !important;
 }
 
-.table-sub-title {
-  text-align: center;
-  font-size: 1.5em;
-  font-weight: 700;
-  vertical-align: middle !important;
-}
-
-.table-title-total {
-  text-align: left;
-  font-size: 1.2em;
-  font-weight: 700;
-  color: black;
-  background-color:lightgreen;
-  vertical-align: middle !important;
-}
-
 .month-title {
   font-size: 1.5em;
   font-weight: 700;
   text-align: center;
-  vertical-align: middle !important;
-}
-
-.column-title {
-  text-align: center;
-  vertical-align: middle !important;
-}
-
-.column-value {
-  text-align: center;
-  vertical-align: middle !important;
-}
-
-.first-thrid-month {
   background-color: lightyellow;
-}
-
-.second-month {
-  background-color: lightcyan;
+  vertical-align: middle !important;
 }
 
 </style>

@@ -1,5 +1,6 @@
 module.exports = app => {
     const { existsOrError } = app.api.validation
+    const { formatterMinutesToHours } = app.api.utils
 
     const getColaboratorsHourPerActivityType = async (req, res) => {
 
@@ -37,15 +38,37 @@ module.exports = app => {
         `
         await app.db.raw(query)
         .then(result => organizeData(result.rows))
-        .then(result => res.json({ result: result.rows }))
+        .then(result => res.json(result))
         .catch(err => res.status(500).send(err))
     }
 
     function organizeData(data) {
-        
-        data.map(row => {
-            console.log(row)
+        let resultArray = []
+        const users = getAllUsersFromData(data);
+
+        users.forEach((value, key) => {
+            let result = {}
+            result.id = key
+            result.name = value
+
+            data.filter(item => {
+                return item.idusuario == key
+            }).map(item => {
+                result[item.sigla] = formatterMinutesToHours(item.duracao)
+            })
+
+            resultArray.push(result)
         })
+
+        return resultArray
+    }
+
+    function getAllUsersFromData(data) {
+        let users = new Map();
+        data.map(item => {
+            users.set(item.idusuario, item.nome)
+        })
+        return users
     }
 
     return { getColaboratorsHourPerActivityType }
