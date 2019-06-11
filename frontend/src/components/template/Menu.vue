@@ -2,7 +2,7 @@
     <aside class="menu-area" v-show="isMenuVisible">
         <nav class="menu">
             <router-link class="menu-item" to="/">
-                <i class="fa fa"> Inicio </i>
+                <i class="fa fa"> Dashboard </i>
             </router-link>
             <router-link class="menu-item" to="/atividade">
                 <i class="fa fa"> Atividades </i>

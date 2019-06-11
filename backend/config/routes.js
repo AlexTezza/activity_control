@@ -50,6 +50,10 @@ module.exports = app => {
         .put(app.api.tipoAtividade.save)
         .delete(app.api.tipoAtividade.remove)
 
+    app.route('/headerTableHourReport')
+        .all(app.config.passport.authenticate())
+        .get(admin(app.api.tipoAtividade.headerTableHourReport))
+
     app.route('/atividade')
         .all(app.config.passport.authenticate())
         .get(app.api.atividade.get)
@@ -69,4 +73,8 @@ module.exports = app => {
     app.route('/dashboard/user/:idUsuario/:dataDe/:dataAte')
         .all(app.config.passport.authenticate())
         .get(app.api.dashboard.searchHoursByActivityType)
+
+    app.route('/colaborators-chart/:dateFrom/:dateUntil')
+        .all(app.config.passport.authenticate())
+        .get(admin(app.api.colaboratorsChart.getColaboratorsHourPerActivityType))
 }

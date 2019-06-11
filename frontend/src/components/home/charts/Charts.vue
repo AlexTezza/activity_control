@@ -32,13 +32,13 @@
 		<br>
 
 		<b-card-group deck>
-			<b-card>
+			<b-card style="max-height: 500px">
 				<h3>Total de horas por tipo de atividade</h3>
-				<apexchart type="bar" :options="chartBarOptions" :series="barSeries"></apexchart>
+				<apexchart width="60%" type="bar" :options="chartBarOptions" :series="barSeries"></apexchart>
 			</b-card>
-			<b-card>
+			<b-card style="max-height: 500px">
 				<h3>Percentual de horas por tipo de atividade</h3>
-				<apexchart type="donut" :options="chartDonutOptions" :series="donutSeries"></apexchart>
+				<apexchart width="60%" type="donut" :options="chartDonutOptions" :series="donutSeries"></apexchart>
 			</b-card>
 		</b-card-group>
 	</div>

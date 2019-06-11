@@ -70,6 +70,28 @@ module.exports = app => {
             .catch(err => res.status(500).send(err))
     }
 
+    const headerTableHourReport = async (req, res) => {
+        const page = req.query.page || 1
+
+        const result = await app.db('tipoAtividade')
+            .count('id')
+            .first()
+        const count = parseInt(result.count)
+
+        app.db('tipoAtividade')
+            .select('id', 'descricao', 'sigla')
+            .limit(limit).offset(page * limit - limit)
+            .orderBy('descricao')
+            .then(tipoAtividades => tipoAtividades.map(tipoAtividade => {
+                return { key: tipoAtividade.sigla, label: tipoAtividade.descricao }
+            }))
+            .then(tipoAtividades => {
+                tipoAtividades.unshift({ key : "name", label : "" })
+                res.json(tipoAtividades)
+            })
+            .catch(err => res.status(500).send(err))
+    }
+
     const getById = (req, res) => {
         app.db('tipoAtividade')
             .where({ id: req.params.id })
@@ -77,5 +99,5 @@ module.exports = app => {
             .catch(err => res.status(500).send(err))
     }
 
-    return { save, remove, get, getById }
+    return { save, remove, get, getById, headerTableHourReport }
 }

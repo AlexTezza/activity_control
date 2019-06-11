@@ -3,29 +3,53 @@
         <PageTitle icon="fa fa-home" main="Dashboard"
             sub="Gráficos de hora" />
 
-        <b-form-row>
+        <b-form-row v-if="!user.admin">
             <div class="chart-view">
                 <Charts />
             </div>
         </b-form-row>
+
+        <div v-else class="admin-pages-tabs">
+            <b-card no-body>
+                <b-tabs card>
+                    <b-tab title="Eu">
+                        <b-form-row>
+                            <div class="chart-view">
+                                <Charts />
+                            </div>
+                        </b-form-row>
+                    </b-tab>
+                    <b-tab title="Geral">
+                        <b-form-row>
+                            <div class="chart-view">
+                                <ColaboratorsChart />
+                            </div>
+                        </b-form-row>
+                    </b-tab>
+                </b-tabs>
+            </b-card>
+        </div>
     </div>
 </template>
 
 <script>
 import PageTitle from '../template/PageTitle'
-
+import { mapState } from 'vuex' 
 import Charts from './charts/Charts'
+import ColaboratorsChart from './ColaboratorsChart'
 
 export default {
     name: 'Home',
     components: { 
         PageTitle, 
-        Charts
+        Charts,
+        ColaboratorsChart
     },
     data: function() {
         return {
         }
     },
+    computed: mapState(['user']),
     methods: {
         getStats() {
         }
