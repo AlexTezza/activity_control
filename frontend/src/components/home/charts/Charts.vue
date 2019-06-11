@@ -100,8 +100,8 @@ export default {
 						horizontal: false,
 						columnWidth: '60%',
 						dataLabels: {
-                        	position: 'top',
-                   		},
+							position: 'top',
+						},
 					},
 				},
 				dataLabels: {
@@ -111,9 +111,9 @@ export default {
 						return formatterTooltip(val)
 					},
 					style: {
-                    	fontSize: '12px',
-                    	colors: ["#304758"]
-                	}
+						fontSize: '12px',
+						colors: ["#304758"]
+					}
 				},
 				stroke: {
 					show: true,
