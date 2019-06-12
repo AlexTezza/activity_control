@@ -1,5 +1,5 @@
 module.exports = app => {
-    const { existsOrError, notExistsOrError } = app.api.validation
+    const { existsOrError, notExistsOrError, objectContainsIdOrErro } = app.api.validation
 
     const save = async (req, res) => {
         const tipoAtividade = { ...req.body }
@@ -14,6 +14,7 @@ module.exports = app => {
         try {
             existsOrError(tipoAtividade.descricao, 'Descrição não informada')
             existsOrError(tipoAtividade.sigla, 'Sigla não informada')
+            existsOrError(tipoAtividade.idFuncao, 'Função não informada')
 
             const tipoAtividadeFromDB = await app.db('tipoAtividade')
                 .where({ sigla: tipoAtividade.sigla }).first()

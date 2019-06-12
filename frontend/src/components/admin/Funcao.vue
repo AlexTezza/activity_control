@@ -1,7 +1,8 @@
 <template>
     <div class="funcao-form">
-        <PageTitle icon="" main=""
-            sub="Cadastro de Função" />
+        <label style="font-weight:bold">
+            Cadastro de função
+        </label>
         <div class="funcao-form-cadastro">
             <b-form-row>
                 <div class="col-12 col-md-9">
@@ -15,7 +16,6 @@
                             placeholder="Informe a Descrição..." />
                     </b-form-group>
                 </div>
-
                 <div class="col-12 col-md-3">
                     <input id="funcao-sigla" type="hidden" v-model="funcao.sigla" />
                     <b-form-group label="Sigla: *" label-for="funcao-sigla">
@@ -27,29 +27,53 @@
                             placeholder="Informe a sigla..." />
                     </b-form-group>
                 </div>
-
-                <div class="col-12 col-md-12">
-                    <b-button variant="primary" v-if="mode === 'save'"
-                        @click="save">Salvar</b-button>
-                    <b-button variant="danger" v-if="mode === 'remove'"
-                        @click="remove">Excluir</b-button>
-                    <b-button class="ml-2" @click="reset">Cancelar</b-button>
+                <div class="col-12 col-md-12 text-right">
+                    <b-button
+                        @click="reset">
+                        Cancelar
+                    </b-button>
+                    <b-button
+                        class="ml-2"
+                        variant="primary"
+                        v-if="mode === 'save'"
+                        @click="save">
+                        Salvar
+                    </b-button>
+                    <b-button
+                        class="ml-2"
+                        variant="danger"
+                        v-if="mode === 'remove'"
+                        @click="remove">
+                        Excluir
+                    </b-button>
                 </div>
             </b-form-row>
-            <hr>
-            <b-table hover striped responsive :items=funcoes :fields=fields res>
-                <template slot="actions" slot-scope="data">
-                    <b-button variant="warning" @click="loadFunction(data.item)" class="mr-2">
-                        <i class="fa fa-pencil"></i>
-                    </b-button>
-                    <b-button variant="danger" @click="loadFunction(data.item, 'remove')">
-                        <i class="fa fa-trash"></i>
-                    </b-button>
-                </template>
-            </b-table>
-            <b-pagination size="md" v-model="page" :total-rows="count" :per-page="limit">
-
-            </b-pagination>
+            <div class="pt-4">
+                <b-table :items=funcoes :fields=fields hover striped responsive small outlined>
+                    <template slot="editar" slot-scope="data">
+                        <b-button
+                            variant="outline-primary"
+                            @click="loadFunction(data.item)"
+                            v-b-tooltip.hover title="Editar função">
+                            <i class="fa fa-pencil"></i>
+                        </b-button>
+                    </template>
+                    <template slot="remover" slot-scope="data">
+                        <b-button
+                            variant="outline-danger"
+                            @click="loadFunction(data.item, 'remove')"
+                            v-b-tooltip.hover title="Remover função">
+                            <i class="fa fa-trash"></i>
+                        </b-button>
+                    </template>
+                </b-table>
+                <b-pagination
+                    size="md"
+                    v-model="page"
+                    :total-rows="count"
+                    :per-page="limit">
+                </b-pagination>
+            </div>
         </div>
     </div>
 </template>
@@ -78,7 +102,8 @@ export default {
             fields: [
                 { key: 'descricao', label: 'Descrição', sortable: true },
                 { key: 'sigla', label: 'Sigla', sortable: true },
-                { key: 'actions', label: 'Ações' }
+                { key: 'editar', label: 'Editar', class: 'text-center'},
+                { key: 'remover', label: 'Remover', class: 'text-center'},
             ]
         }
     },
@@ -131,7 +156,3 @@ export default {
     }
 }
 </script>
-
-<style>
-
-</style>

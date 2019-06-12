@@ -1,109 +1,31 @@
+
 <template>
     <div class="atividade-form">
-        <PageTitle icon="" main="Atividades"
-            sub="Cadastro de Atividades" />
+        <PageTitle
+            icon="fa fa-tasks"
+            main="Atividades"
+            sub="Cadastro de Atividades"
+            showButton="showButton"
+            v-bind:action="showModal"
+            textButton="Adicionar"
+            textTooltipButton="Adicionar atividade" />
         <div class="atividade-form-cadastro">
-            <b-form-row>
-                <input id="atividade-id" type="hidden" v-model="atividade.id" />
-                <div class="col-12 col-md-2">
-                    <b-form-group label="Task: #" label-for="atividade-tarefa">
-                        <b-form-input
-                            :readonly="mode === 'remove'"
-                            id="atividade-tarefa"
-                            type="number"
-                            v-model="atividade.tarefa"
-                            placeholder="Nº Task do Redmine..." />
-                    </b-form-group>
-                </div>
-                <div class="col-12 col-md-7">
-                    <b-form-group label="Descricao: *" label-for="atividade-descricao">
-                        <b-form-input 
-                            :readonly="mode === 'remove'"
-                            id="atividade-descricao" 
-                            type="text"
-                            v-model="atividade.descricao" required
-                            placeholder="Informe a Descrição..." />
-                    </b-form-group>
-                </div>
-                <div class="col-12 col-md-3">
-                    <b-form-group label="Tipo atividade: *" label-for="atividade-tipoAtividade">
-                        <b-form-select v-if="mode === 'save'"
-                            id="atividade-tipoAtividade"
-                            v-model="atividade.tipoAtividade.id">
-
-                            <template slot="first">
-                                <option first :value="null">-- Selecione --</option>
-
-                                <optgroup v-for="(func) in functions" v-bind:key="func.id" :label="func.description">
-                                    <option v-for="(item) in filterItemsByFunction(func.id, tipoAtividades)" 
-                                        v-bind:key="item.value" 
-                                        :value="item.value">{{item.text}}</option>
-                                </optgroup>
-
-                            </template>
-                        </b-form-select>
-                        <b-form-input v-else
-                            id="atividade-tipoAtividade" type="text"
-                            v-model="atividade.tipoAtividade.descricao"
-                            readonly />
-                    </b-form-group>
-                </div>
-                <div class="col-12 col-md-3">
-                    <b-form-group label="Data: *" label-for="atividade-data">
-                        <b-form-input
-                            :readonly="mode === 'remove'"
-                            id="atividade-data" 
-                            type="date"
-                            v-model="atividade.data" required />
-                    </b-form-group>
-                </div>
-                <div class="col-12 col-md-3">
-                    <b-form-group label="Hora início: *" label-for="atividade-horaInicio">
-                        <b-form-input
-                            :readonly="mode === 'remove'"
-                            id="atividade-horaInicio" 
-                            type="time"
-                            v-model="atividade.horaInicio" required />
-                    </b-form-group>
-                </div>
-                <div class="col-12 col-md-3">
-                    <b-form-group label="Hora fim: *" label-for="atividade-horaFim">
-                        <b-form-input
-                            :readonly="mode === 'remove'"
-                            id="atividade-horaFim" 
-                            type="time"
-                            v-model="atividade.horaFim" required />
-                    </b-form-group>
-                </div>
-                <div class="rcol-12 col-md-3">
-                    <b-form-group label="Duração: (em minutos)" label-for="atividade-duracao">
-                        <b-form-input 
-                            id="atividade-duracao" 
-                            type="text"
-                            v-model="atividade.duracao"
-                            placeholder="0 minuto(s)"
-                            disabled />
-                    </b-form-group>
-                </div>
-
-                <div class="col-12 col-md-12">
-                    <b-button variant="primary" v-if="mode === 'save'"
-                        @click="save">Salvar</b-button>
-                    <b-button variant="danger" v-if="mode === 'remove'"
-                        @click="remove">Excluir</b-button>
-                    <b-button class="ml-2" @click="reset">Cancelar</b-button>
-                </div>
-            </b-form-row>
-            <hr>
-
-            <b-card no-body class="mb-1">
-                <b-card-header header-tag="header" class="p-0" role="tab">
-                    <b-button @click="toggleCollapse" v-b-toggle.accordion variant="success">Pesquisa
-                        <i class="fa fa-lg" :class="icon"></i>
-                    </b-button>
-                </b-card-header>
+            <div class="pb-2 col-12">
+                <b-button
+                    id="search-activity-button"
+                    @click="toggleCollapse"
+                    variant="dark"
+                    v-b-toggle.accordion>
+                        Pesquisa
+                    <i class="fa fa-lg" :class="icon"></i>
+                </b-button>
+                <b-tooltip ref="tooltip" target="search-activity-button" placement="bottomright">
+                    Pesquisar atividade(s)
+                </b-tooltip>
+            </div>
+            <div class="col-12">
                 <b-collapse id="accordion" accordion="my-accordion" role="tabpanel">
-                    <b-card-body>
+                    <b-card footer-tag="footer">
                         <b-form-row>
                             <div class="col-12 col-md-2">
                                 <b-form-group label="Task: #" label-for="search-tarefa">
@@ -111,14 +33,13 @@
                                         id="search-tarefa"
                                         type="number"
                                         v-model="search.tarefa"
-                                        placeholder="Nº Task do Redmine..."
-                                        @keyup.native.enter="onEnter" />
+                                        placeholder="Nº Task do Redmine..." />
                                 </b-form-group>
                             </div>
-                            <div class="rcol-12 col-md-8">
-                                <b-form-group label="Descricao:" label-for="search-descricao">
+                            <div class="col-12 col-md-10">
+                                <b-form-group label="Descrição:" label-for="search-descricao">
                                     <b-form-input
-                                        id="search-descricao" 
+                                        id="search-descricao"
                                         type="text"
                                         v-model="search.descricao"
                                         placeholder="Pesquise pela descrição..."
@@ -127,7 +48,7 @@
                             </div>
                         </b-form-row>
                         <b-form-row>
-                            <div class="rcol-12 col-md-4">
+                            <div class="col-12 col-md-4">
                                 <b-form-group label="Tipo atividade:" label-for="search-tipoAtividade">
                                     <b-form-select
                                         id="search-tipoAtividade"
@@ -146,57 +67,200 @@
                                     </b-form-select>
                                 </b-form-group>
                             </div>
-                            <div class="rcol-12 col-md-3">
+                            <div class="col-12 col-md-4">
                                 <b-form-group label="Data de:" label-for="search-data-of">
                                     <b-form-input
-                                        id="search-data-of" 
+                                        id="search-data-of"
                                         type="date"
                                         v-model="search.dataDe"
                                         @keyup.native.enter="onEnter" />
                                 </b-form-group>
                             </div>
-                            <div class="rcol-12 col-md-3">
+                            <div class="col-12 col-md-4">
                                 <b-form-group label="Até:" label-for="search-data-until">
                                     <b-form-input
-                                        id="search-data-until" 
+                                        id="search-data-until"
                                         type="date"
                                         v-model="search.dataAte"
                                         @keyup.native.enter="onEnter" />
                                 </b-form-group>
                             </div>
-                            <div class="col-12 col-md-2" id="search-buttons">
-                                <b-button variant="danger" class="mr-1" @click="resetSearch">
+                        </b-form-row>
+                        <b-row align-v="center" slot="footer">
+                            <b-col>
+                                Total de horas: {{search.horaTotal}}
+                            </b-col>
+                            <b-col class="text-right">
+                                <b-button
+                                    variant="danger"
+                                    class="mr-1"
+                                    @click="resetSearch"
+                                    v-b-tooltip.hover title="Limpar pesquisa">
                                     <i class="fa fa-remove"></i>
+                                    Limpar
                                 </b-button>
-                                <b-button variant="primary" @click="pressSearchAtividades">
+                                <b-button
+                                    variant="primary"
+                                    @click="pressSearchAtividades"
+                                    v-b-tooltip.hover title="Pesquisar">
                                     <i class="fa fa-search"></i>
+                                    Pesquisar
                                 </b-button>
-                            </div>
-                        </b-form-row>
-                        <b-form-row>
-                            <div class="col-12" >
-                                <div>
-                                    Total de horas: {{search.horaTotal}}
-                                </div>
-                            </div>
-                        </b-form-row>
-                    </b-card-body>
+                            </b-col>
+                        </b-row>
+                    </b-card>
                 </b-collapse>
-            </b-card>
-            <hr>
-            <b-table hover striped responsive :items=atividades :fields=fields>
-                <template slot="actions" slot-scope="data">
-                    <b-button variant="warning" @click="loadAtividade(data.item)" class="mr-2">
-                        <i class="fa fa-pencil"></i>
-                    </b-button>
-                    <b-button variant="danger" @click="loadAtividade(data.item, 'remove')">
-                        <i class="fa fa-trash"></i>
-                    </b-button>
-                </template>
-            </b-table>
-            <b-pagination size="md" v-model="page" :total-rows="count" :per-page="limit">
+            </div>
+            <div class="pt-4 col-12">
+                <b-table :items=atividades :fields=fields hover striped responsive small outlined>
+                    <template slot="editar" slot-scope="data">
+                        <b-button
+                            variant="outline-primary"
+                            @click="loadAtividade(data.item)"
+                            class="mr-2"
+                            v-b-tooltip.hover title="Editar atividade">
+                            <i class="fa fa-pencil"></i>
+                        </b-button>
+                    </template>
+                    <template slot="remover" slot-scope="data">
+                        <b-button
+                            variant="outline-danger"
+                            @click="loadAtividade(data.item, 'remove')"
+                            v-b-tooltip.hover title="Remover atividade">
+                            <i class="fa fa-trash"></i>
+                        </b-button>
+                    </template>
+                </b-table>
+                <b-pagination size="md" v-model="page" :total-rows="count" :per-page="limit"></b-pagination>
+            </div>
+        </div>
+        <div>
+            <b-modal
+                ref="add-activities-modal"
+                title="Atividade(s)"
+                @hidden="cancel"
+                size="lg"
+                hide-footer
+                centered>
+                <div class="d-block">
+                    <b-container fluid>
+                        <b-form-row>
+                            <input id="atividade-id" type="hidden" v-model="atividade.id" />
+                            <div class="col-12 col-md-2">
+                                <b-form-group label="Task: #" label-for="atividade-tarefa">
+                                    <b-form-input
+                                        :readonly="mode === 'remove'"
+                                        id="atividade-tarefa"
+                                        type="number"
+                                        v-model="atividade.tarefa"
+                                                    placeholder="Nº Task do Redmine..."
+                                                    autofocus />
+                                </b-form-group>
+                            </div>
+                            <div class="col-12 col-md-7">
+                                <b-form-group label="Descrição: *" label-for="atividade-descricao">
+                                    <b-form-input
+                                        :readonly="mode === 'remove'"
+                                        id="atividade-descricao"
+                                        type="text"
+                                        v-model="atividade.descricao"
+                                        placeholder="Informe a Descrição..."
+                                        required />
+                                </b-form-group>
+                            </div>
+                            <div class="col-12 col-md-3">
+                                <b-form-group label="Tipo atividade: *" label-for="atividade-tipoAtividade">
+                                    <b-form-select
+                                        v-if="mode === 'save'"
+                                        id="atividade-tipoAtividade"
+                                        v-model="atividade.tipoAtividade.id">
+                                        <template slot="first">
+                                            <option first :value="null">
+                                                -- Selecione --
+                                            </option>
 
-            </b-pagination>
+                                            <optgroup v-for="(func) in functions" v-bind:key="func.id" :label="func.description">
+                                                <option v-for="(item) in filterItemsByFunction(func.id, tipoAtividades)" 
+                                                    v-bind:key="item.value" 
+                                                    :value="item.value">{{item.text}}</option>
+                                            </optgroup>
+
+                                        </template>
+                                    </b-form-select>
+                                    <b-form-input
+                                        v-else
+                                        id="atividade-tipoAtividade"
+                                        type="text"
+                                        v-model="atividade.tipoAtividade.descricao"
+                                        readonly />
+                                </b-form-group>
+                            </div>
+                            <div class="col-12 col-md-3">
+                                <b-form-group label="Data: *" label-for="atividade-data">
+                                    <b-form-input
+                                        :readonly="mode === 'remove'"
+                                        id="atividade-data"
+                                        type="date"
+                                        v-model="atividade.data"
+                                        required />
+                                </b-form-group>
+                            </div>
+                            <div class="col-12 col-md-3">
+                                <b-form-group label="Hora início: *" label-for="atividade-horaInicio">
+                                    <b-form-input
+                                        :readonly="mode === 'remove'"
+                                        id="atividade-horaInicio"
+                                        type="time"
+                                        v-model="atividade.horaInicio"
+                                        required />
+                                </b-form-group>
+                            </div>
+                            <div class="col-12 col-md-3">
+                                <b-form-group label="Hora fim: *" label-for="atividade-horaFim">
+                                    <b-form-input
+                                        :readonly="mode === 'remove'"
+                                        id="atividade-horaFim"
+                                        type="time"
+                                        v-model="atividade.horaFim"
+                                        required />
+                                </b-form-group>
+                            </div>
+                            <div class="col-12 col-md-3">
+                                <b-form-group label="Duração: (em minutos)" label-for="atividade-duracao">
+                                    <b-form-input
+                                        id="atividade-duracao"
+                                        type="text"
+                                        v-model="atividade.duracao"
+                                        placeholder="0 minuto(s)"
+                                        disabled />
+                                </b-form-group>
+                            </div>
+                        </b-form-row>
+                    </b-container>
+                    <b-container class="pt-3" fluid>
+                        <b-row>
+                            <b-col>
+                                <b-button @click="cancel">
+                                    Cancelar
+                                </b-button>
+                            </b-col>
+                            <b-col>
+                                <div class="float-right">
+                                    <b-button variant="success" v-if="mode === 'save'" @click="save(saveAndContinue = true)">
+                                        Salvar e continuar
+                                    </b-button>
+                                    <b-button class="ml-2" variant="primary" v-if="mode === 'save'" @click="save(saveAndContinue = false)">
+                                        Salvar
+                                    </b-button>
+                                    <b-button variant="danger" v-if="mode === 'remove'" @click="remove">
+                                        Excluir
+                                    </b-button>
+                                </div>
+                            </b-col>
+                        </b-row>
+                    </b-container>
+                 </div>
+            </b-modal>
         </div>
     </div>
 </template>
@@ -263,7 +327,8 @@ export default {
                 { key: 'horaFim', label: 'Hora fim', sortable: true },
                 { key: 'duracao', label: 'Duração', sortable: true,
                     formatter: value => `${value} minuto(s)` },
-                { key: 'actions', label: 'Ações' }
+                { key: 'editar', label: 'Editar', class: 'text-center' },
+                { key: 'remover', label: 'Remover', class: 'text-center' },
             ]
         }
     },
@@ -288,10 +353,11 @@ export default {
             })
         },
         loadAtividade(atividade, mode = 'save') {
+            this.showModal()
             this.mode = mode
             this.atividade = { ...atividade }
         },
-        save() {
+        save(saveAndContinue = false) {
             const method = this.atividade.id ? 'put' : 'post'
             const id = this.atividade.id ? `/${this.atividade.id}` : ''
             this.atividade.idUsuario = this.usuarioLogado.id;
@@ -300,6 +366,9 @@ export default {
                 .then(() => {
                     this.$toasted.global.defaultSuccess()
                     this.reset()
+                    if (!saveAndContinue) {
+                        this.hideModal()
+                    }
                 })
                 .catch(showError)
         },
@@ -309,6 +378,7 @@ export default {
                 .then(() => {
                     this.$toasted.global.defaultSuccess()
                     this.reset()
+                    this.hideModal()
                 })
                 .catch(showError)
         },
@@ -317,7 +387,6 @@ export default {
             let lastUntilHour = this.atividade.horaFim
 
             this.mode = 'save'
-
             this.atividade = { ...initialAtividade }
             this.atividade.data = selectedDate
             this.atividade.horaInicio = lastUntilHour
@@ -325,6 +394,10 @@ export default {
             this.atividade.tipoAtividade.id = null
 
             this.loadAtividades()
+        },
+        cancel() {
+            this.reset();
+            this.hideModal();
         },
         pressSearchAtividades() {
             this.page = 1
@@ -337,7 +410,7 @@ export default {
             const dataDe = this.search.dataDe ? this.search.dataDe : null
             const dataAte = this.search.dataAte ? this.search.dataAte : null
 
-            const url = 
+            const url =
                 `${baseApiUrl}/atividades/search/${this.page}/${this.usuarioLogado.id}/${tarefa}/${descricao}/${idTipoAtividade}/${dataDe}/${dataAte}`
 
             axios.get(url).then(res => {
@@ -375,17 +448,18 @@ export default {
         },
         updateDuracao() {
             let duracao = 0;
+
             if (this.atividade.horaInicio !== "" && this.atividade.horaFim !== "") {
                 var horaInicio = parseInt(this.atividade.horaInicio.split(':')[0])
                 var minInicio = parseInt(this.atividade.horaInicio.split(':')[1])
                 var horaFim = parseInt(this.atividade.horaFim.split(':')[0])
                 var minFim = parseInt(this.atividade.horaFim.split(':')[1])
-        
                 var horaDiferanca = (horaFim - horaInicio) * 60
                 var minDiferanca = minFim - minInicio
 
                 duracao = horaDiferanca + minDiferanca
             }
+
             this.atividade.duracao = duracao
         },
         updateHoraFim() {
@@ -399,9 +473,15 @@ export default {
         onEnter: function() {
             this.pressSearchAtividades()
         },
+        showModal() {
+            this.$refs['add-activities-modal'].show()
+        },
+        hideModal() {
+            this.$refs['add-activities-modal'].hide()
+        },
         filterItemsByFunction: function(idFunction, items) {
             return items.filter(function(item) {
-                return item.idFuncao == idFunction;
+                return item.idFuncao == idFunction
             })
         }
     },
@@ -414,7 +494,7 @@ export default {
             }
         },
         'atividade.horaInicio': [
-            'updateDuracao', 
+            'updateDuracao',
             function() {
                 this.updateHoraFim()
             }
@@ -425,12 +505,13 @@ export default {
         this.loadAtividades()
         this.loadFunctions()
         this.loadTipoAtividades()
-    }
+    },
 }
 </script>
 
 <style>
     .atividade-form-cadastro {
+        margin-top: 10px;
         padding: 15px;
         background-color: white;
     }
@@ -438,5 +519,4 @@ export default {
     #search-buttons {
         padding-top: 31px;
     }
-
 </style>

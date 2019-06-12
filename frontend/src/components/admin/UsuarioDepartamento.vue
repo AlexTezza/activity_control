@@ -1,23 +1,24 @@
 <template>
     <div class="usuario-departamento-form">
-        <PageTitle icon="" main=""
-            sub="Vínculo entre Usuários e Departamentos" />
+        <label style="font-weight:bold">Vínculo entre usuários e departamentos</label>
         <div class="usuario-departamento-form-cadastro">
             <b-form-row>
                 <div class="col-12 col-md-6">
                     <input id="usuario-departamento-id" type="hidden" v-model="usuarioDepartamento.id" />
                     <b-form-group label="Departamento: *" label-for="usuario-departamento-departamento">
-                        <b-form-select v-if="mode === 'save'"
+                        <b-form-select
+                            v-if="mode === 'save'"
                             id="usuario-departamento-departamento"
                             :options="departamentos"
                             v-model="usuarioDepartamento.departamento.id">
-
                             <template slot="first">
                                 <option first :value="null">-- Selecione --</option>
                             </template>
                         </b-form-select>
-                        <b-form-input v-else
-                            id="usuario-departamento-departamento" type="text"
+                        <b-form-input
+                            v-else
+                            id="usuario-departamento-departamento"
+                            type="text"
                             v-model="usuarioDepartamento.departamento.descricao"
                             readonly />
                     </b-form-group>
@@ -25,44 +26,75 @@
 
                 <div class="col-12 col-md-6">
                     <b-form-group label="Usuário: *" label-for="usuario-departamento-usuario">
-                        <b-form-select v-if="mode === 'save'"
+                        <b-form-select
+                            v-if="mode === 'save'"
                             id="usuario-departamento-usuario"
                             :options="usuarios"
                             v-model="usuarioDepartamento.usuario.id">
-
                             <template slot="first">
-                                <option first :value="null">-- Selecione --</option>
+                                <option first :value="null">
+                                    -- Selecione --
+                                </option>
                             </template>
                         </b-form-select>
-                        <b-form-input v-else
-                            id="usuario-departamento-usuario" type="text"
+                        <b-form-input
+                            v-else
+                            id="usuario-departamento-usuario"
+                            type="text"
                             v-model="usuarioDepartamento.usuario.nome"
                             readonly />
                     </b-form-group>
                 </div>
 
-                <div class="col-12 col-md-12">
-                    <b-button variant="primary" v-if="mode === 'save'"
-                        @click="save">Salvar</b-button>
-                    <b-button variant="danger" v-if="mode === 'remove'"
-                        @click="remove">Excluir</b-button>
-                    <b-button class="ml-2" @click="reset">Cancelar</b-button>
+                <div class="col-12 col-md-12 text-right">
+                    <b-button
+                        @click="reset">
+                        Cancelar
+                    </b-button>
+                    <b-button
+                        class="ml-2"
+                        variant="primary"
+                        v-if="mode === 'save'"
+                        @click="save">
+                        Salvar
+                    </b-button>
+                    <b-button
+                        class="ml-2"
+                        variant="danger"
+                        v-if="mode === 'remove'"
+                        @click="remove">
+                        Excluir
+                    </b-button>
                 </div>
             </b-form-row>
-            <hr>
-            <b-table hover striped responsive :items=usuariosDepartamentos :fields=fields res>
-                <template slot="actions" slot-scope="data">
-                    <b-button variant="warning" @click="loadUsuarioDepartamento(data.item)" class="mr-2">
-                        <i class="fa fa-pencil"></i>
-                    </b-button>
-                    <b-button variant="danger" @click="loadUsuarioDepartamento(data.item, 'remove')">
-                        <i class="fa fa-trash"></i>
-                    </b-button>
-                </template>
-            </b-table>
-            <b-pagination size="md" v-model="page" :total-rows="count" :per-page="limit">
-
-            </b-pagination>
+            <div class="pt-4">
+                <b-table :items=usuariosDepartamentos :fields=fields hover striped responsive small outlined>
+                    <template slot="editar" slot-scope="data">
+                        <b-button
+                            variant="outline-primary"
+                            @click="loadUsuarioDepartamento(data.item)"
+                            title="Editar usuário -> departamento"
+                            v-b-tooltip.hover>
+                            <i class="fa fa-pencil"></i>
+                        </b-button>
+                    </template>
+                    <template slot="remover" slot-scope="data">
+                        <b-button
+                            variant="outline-danger"
+                            @click="loadUsuarioDepartamento(data.item, 'remove')"
+                            title="Remover usuário -> departamento"
+                            v-b-tooltip.hover>
+                            <i class="fa fa-trash"></i>
+                        </b-button>
+                    </template>
+                </b-table>
+                <b-pagination
+                    size="md"
+                    v-model="page"
+                    :total-rows="count"
+                    :per-page="limit">
+                </b-pagination>
+            </div>
         </div>
     </div>
 </template>
@@ -99,7 +131,8 @@ export default {
             fields: [
                 { key: 'departamento.descricao', label: 'Departamento', sortable: true },
                 { key: 'usuario.nome', label: 'Nome usuário', sortable: true },
-                { key: 'actions', label: 'Ações' }
+                { key: 'editar', label: 'Editar', class: 'text-center'},
+                { key: 'remover', label: 'Remover', class: 'text-center'},
             ]
         }
     },
@@ -166,7 +199,3 @@ export default {
     }
 }
 </script>
-
-<style>
-
-</style>

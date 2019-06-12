@@ -60,4 +60,9 @@ export default {
         font-weight: 600;
     }
 
+    .router-link-exact-active.menu-item{
+        background: rgb(65, 65, 65);
+        color: #FFF;
+        font-weight: 600;
+    }
 </style>
