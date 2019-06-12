@@ -49,6 +49,25 @@ module.exports = app => {
         .get(app.api.tipoAtividade.getById)
         .put(app.api.tipoAtividade.save)
         .delete(app.api.tipoAtividade.remove)
+    
+    app.route('/getAll/tipoAtividade')
+        .all(app.config.passport.authenticate())
+        .get(app.api.tipoAtividade.getAll)
+        
+    app.route('/funcao')
+        .all(app.config.passport.authenticate())
+        .get(app.api.funcao.get)
+        .post(app.api.funcao.save)
+
+    app.route('/funcao/:id')
+        .all(app.config.passport.authenticate())
+        .get(app.api.funcao.getById)
+        .put(app.api.funcao.save)
+        .delete(app.api.funcao.remove)
+
+    app.route('/getAll/funcao')
+        .all(app.config.passport.authenticate())
+        .get(app.api.funcao.getAll)
 
     app.route('/headerTableHourReport')
         .all(app.config.passport.authenticate())

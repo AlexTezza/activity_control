@@ -1,3 +1,4 @@
+
 <template>
     <div class="atividade-form">
         <PageTitle
@@ -51,12 +52,17 @@
                                 <b-form-group label="Tipo atividade:" label-for="search-tipoAtividade">
                                     <b-form-select
                                         id="search-tipoAtividade"
-                                        :options="tipoAtividades"
-                                        v-model="search.tipoAtividade.id">
+                                        v-model="search.tipoAtividade.id" >
+
                                         <template slot="first">
-                                            <option first :value="null">
-                                                -- Selecione --
-                                            </option>
+                                            <option first :value="null">-- Selecione --</option>
+
+                                            <optgroup v-for="(func) in functions" v-bind:key="func.id" :label="func.description">
+                                                <option v-for="(item) in filterItemsByFunction(func.id, tipoAtividades)" 
+                                                    v-bind:key="item.value" 
+                                                    :value="item.value">{{item.text}}</option>
+                                            </optgroup>
+
                                         </template>
                                     </b-form-select>
                                 </b-form-group>
@@ -147,8 +153,8 @@
                                         id="atividade-tarefa"
                                         type="number"
                                         v-model="atividade.tarefa"
-                                        placeholder="Nº Task do Redmine..."
-                                        autofocus />
+                                                    placeholder="Nº Task do Redmine..."
+                                                    autofocus />
                                 </b-form-group>
                             </div>
                             <div class="col-12 col-md-7">
@@ -167,12 +173,18 @@
                                     <b-form-select
                                         v-if="mode === 'save'"
                                         id="atividade-tipoAtividade"
-                                        :options="tipoAtividades"
                                         v-model="atividade.tipoAtividade.id">
                                         <template slot="first">
                                             <option first :value="null">
                                                 -- Selecione --
                                             </option>
+
+                                            <optgroup v-for="(func) in functions" v-bind:key="func.id" :label="func.description">
+                                                <option v-for="(item) in filterItemsByFunction(func.id, tipoAtividades)" 
+                                                    v-bind:key="item.value" 
+                                                    :value="item.value">{{item.text}}</option>
+                                            </optgroup>
+
                                         </template>
                                     </b-form-select>
                                     <b-form-input
@@ -247,7 +259,7 @@
                             </b-col>
                         </b-row>
                     </b-container>
-                </div>
+                 </div>
             </b-modal>
         </div>
     </div>
@@ -296,6 +308,7 @@ export default {
             atividade: { ...initialAtividade },
             search : { ...initialSearch },
             atividades: [],
+            functions: [],
             tipoAtividades: [],
             page: 1,
             limit: 0,
@@ -418,10 +431,18 @@ export default {
             this.modeListagem = 'normal'
         },
         loadTipoAtividades() {
-            const url = `${baseApiUrl}/tipoAtividade`
+            const url = `${baseApiUrl}/getAll/tipoAtividade`
             axios.get(url).then(res => {
-                this.tipoAtividades = res.data.data.map(tipoCategoria => {
-                    return { value: tipoCategoria.id, text: tipoCategoria.descricao }
+                this.tipoAtividades = res.data.map(tipoCategoria => {
+                    return { value: tipoCategoria.id, text: tipoCategoria.descricao, idFuncao: tipoCategoria.idFuncao }
+                })
+            })
+        },
+        loadFunctions() {
+            const url = `${baseApiUrl}/getAll/funcao`
+            axios.get(url).then(res => {
+                this.functions = res.data.map(funcao => {
+                    return { id: funcao.id, description: funcao.descricao }
                 })
             })
         },
@@ -458,6 +479,11 @@ export default {
         hideModal() {
             this.$refs['add-activities-modal'].hide()
         },
+        filterItemsByFunction: function(idFunction, items) {
+            return items.filter(function(item) {
+                return item.idFuncao == idFunction
+            })
+        }
     },
     watch: {
         page() {
@@ -477,6 +503,7 @@ export default {
     },
     mounted() {
         this.loadAtividades()
+        this.loadFunctions()
         this.loadTipoAtividades()
     },
 }
