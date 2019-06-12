@@ -3,14 +3,13 @@
         <div class="user-button">
             <div class="user-dropdown-img">
                 <Gravatar :email="user.email" alt="User" />
-
                 <label class="user-name">{{userName}}</label>
             </div>
             <i class="fa fa-angle-down"></i>
         </div>
         <div class="user-dropdown-content">
             <router-link to="/admin" v-if="user.admin">
-                <i class="fa fa-cogs"></i> Administração
+                <i class="fa fa-cog"></i> Administração
             </router-link>
             <a href @click.prevent="logout"><i class="fa fa-sign-out"></i> Sair</a>
         </div>
@@ -36,7 +35,7 @@ export default {
             let user = this.user.nome
             let userNameArray = user.split(' ')
             let lastPosition = userNameArray.length - 1
-            
+
             if (lastPosition > 0) {
                 if (lastPosition === 1) {
                     this.userName = this.user.nome
@@ -64,6 +63,7 @@ export default {
     .user-dropdown {
         position: relative;
         height: 100%;
+        cursor: pointer;
     }
 
     .user-button {

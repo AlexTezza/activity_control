@@ -1,44 +1,60 @@
 <template>
-	<div class="template">
-		<b-card>
-			<b-form-row id="indicator">
-				<div class="rcol-12 col-md-3">
-					<b-form-group label="Data de:" label-for="search-data-of">
-						<b-form-input
-							id="search-data-of" 
-							type="date"
-							v-model="search.dataDe" />
-					</b-form-group>
-				</div>
-				<div class="rcol-12 col-md-3">
-					<b-form-group label="Até:" label-for="search-data-until">
-						<b-form-input
-							id="search-data-until" 
-							type="date"
-							v-model="search.dataAte" />
-					</b-form-group>
-				</div>
-				<div class="rcol-12 col-md-2" id="search-buttons">
-					<b-button variant="danger" class="mr-1" @click="resetSearch">
-						<i class="fa fa-remove"></i>
-					</b-button>
-					<b-button variant="primary" @click="loadData">
-						<i class="fa fa-search"></i>
-					</b-button>
-				</div>
-			</b-form-row>
-		</b-card>
-
-		<br>
-
-		<b-card-group deck>
+	<div>
+		<b-button
+			id="search-charts-button"
+			@click="toggleCollapse"
+			variant="dark"
+			v-b-toggle.accordion>
+				Pesquisa
+			<i class="fa fa-lg" :class="icon"></i>
+		</b-button>
+		<b-tooltip ref="tooltip" target="search-charts-button" placement="bottomright">
+			Pesquisar período
+		</b-tooltip>
+		<div class="pt-2">
+			<b-collapse id="accordion" accordion="my-accordion" role="tabpanel">
+				<b-card-group deck>
+					<b-card footer-tag="footer">
+						<b-form-row id="indicator">
+							<div class="rcol-12 col-md-6">
+								<b-form-group label="Data de:" label-for="search-data-of">
+									<b-form-input
+										id="search-data-of"
+										type="date"
+										v-model="search.dataDe" />
+								</b-form-group>
+							</div>
+							<div class="rcol-12 col-md-6">
+								<b-form-group label="Até:" label-for="search-data-until">
+									<b-form-input
+										id="search-data-until"
+										type="date"
+										v-model="search.dataAte" />
+								</b-form-group>
+							</div>
+						</b-form-row>
+						<div slot="footer" class="float-right">
+							<b-button variant="danger" class="mr-1" @click="resetSearch">
+								<i class="fa fa-remove"></i>
+								Limpar
+							</b-button>
+							<b-button variant="primary" @click="loadData">
+								<i class="fa fa-search"></i>
+								Pesquisar
+							</b-button>
+						</div>
+					</b-card>
+				</b-card-group>
+			</b-collapse>
+		</div>
+		<b-card-group class="pt-4" deck>
 			<b-card>
-				<h3>Total de horas por tipo de atividade</h3>
-				<apexchart width="80%" type="bar" :options="chartBarOptions" :series="barSeries"></apexchart>
+				<h4 style="text-align:center">Total de horas por tipo de atividade</h4>
+				<apexchart type="bar" :options="chartBarOptions" :series="barSeries"></apexchart>
 			</b-card>
 			<b-card>
-				<h3>Percentual de horas por tipo de atividade</h3>
-				<apexchart width="80%" type="donut" :options="chartDonutOptions" :series="donutSeries"></apexchart>
+				<h4 style="text-align:center">Percentual de horas por tipo de atividade</h4>
+				<apexchart type="donut" :options="chartDonutOptions" :series="donutSeries"></apexchart>
 			</b-card>
 		</b-card-group>
 	</div>
@@ -170,7 +186,7 @@ export default {
 						dataLabels: {
 							offset: 0,
 							minAngleToShowLabel: 2
-						}, 
+						},
 						donut: {
 							labels: {
 								show: true,
@@ -205,7 +221,10 @@ export default {
 			const json = localStorage.getItem(userKey)
 			// Transforma o json em objeto
 			return JSON.parse(json)
-		}
+		},
+		icon() {
+            return this.$store.state.isCollapseVisible ? "fa-angle-up" : "fa-angle-down"
+        }
 	},
 	methods: {
 		loadData() {
@@ -223,7 +242,7 @@ export default {
 				if (res.data && res.data.result && res.data.result.length > 0) {
 					this.chartSerieName = []
 					this.chartDonutData = []
-					
+
 					res.data.result.forEach((element) => {
 						this.chartSerieName.push(element.name)
 						this.chartBarData.push(element.data)
@@ -240,7 +259,10 @@ export default {
 		},
 		resetSearch() {
             this.search = { ...initialSearch }
-		}
+		},
+		toggleCollapse() {
+            this.$store.commit('toggleCollapse')
+        },
 	},
 	mounted() {
 		this.loadData();
