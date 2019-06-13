@@ -84,10 +84,9 @@ export default {
     }
 
     .user-dropdown-img > img {
-        max-height: 37px;
-        border-radius: 5px;
+        max-height: 38px;
+        border-radius: 50%;
     }
-
 
     .user-dropdown-content {
         position: absolute;
@@ -97,11 +96,9 @@ export default {
         box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
         padding: 10px;
         z-index: 1;
-
         display: flex;
         flex-direction: column;
         flex-wrap: wrap;
-
         visibility: hidden;
         opacity: 0;
         transition: visibility 0s, opacity 0.5s linear;
