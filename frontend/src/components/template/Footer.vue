@@ -1,6 +1,6 @@
 <template>
     <footer class="footer">
-        <span>Desenvolvido por <strong>Alex Tezza</strong> © 2019</span>
+        <span> © myTime - 2019</span>
     </footer>
 </template>
 
@@ -13,9 +13,8 @@ export default {
 <style>
     .footer {
         grid-area: footer;
-        background-color: #DDD;
-        color: #333;
-
+        background-color: rgb(15, 56, 89);;
+        color: #FFF;
         display: flex;
         align-items: center;
         justify-content: flex-end;
