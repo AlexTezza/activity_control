@@ -41,7 +41,7 @@ export default {
         display: block;
         text-decoration: none;
         color: #FFF;
-        padding: 15px;
+        padding: 12px;
     }
 
     .menu-item {
@@ -49,7 +49,7 @@ export default {
     }
 
     .menu a i {
-        font-size: 1.2rem;
+        font-size: 1.12rem;
         font-weight: 400;
         font-family: "Lato", sans-serif;
     }
