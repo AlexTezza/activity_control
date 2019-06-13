@@ -17,9 +17,9 @@
                 </div>
                 <div class="col-12 col-md-7">
                     <b-form-group label="Descricao: *" label-for="atividade-descricao">
-                        <b-form-input 
+                        <b-form-input
                             :readonly="mode === 'remove'"
-                            id="atividade-descricao" 
+                            id="atividade-descricao"
                             type="text"
                             v-model="atividade.descricao" required
                             placeholder="Informe a Descrição..." />
@@ -46,7 +46,7 @@
                     <b-form-group label="Data: *" label-for="atividade-data">
                         <b-form-input
                             :readonly="mode === 'remove'"
-                            id="atividade-data" 
+                            id="atividade-data"
                             type="date"
                             v-model="atividade.data" required />
                     </b-form-group>
@@ -55,7 +55,7 @@
                     <b-form-group label="Hora início: *" label-for="atividade-horaInicio">
                         <b-form-input
                             :readonly="mode === 'remove'"
-                            id="atividade-horaInicio" 
+                            id="atividade-horaInicio"
                             type="time"
                             v-model="atividade.horaInicio" required />
                     </b-form-group>
@@ -64,15 +64,15 @@
                     <b-form-group label="Hora fim: *" label-for="atividade-horaFim">
                         <b-form-input
                             :readonly="mode === 'remove'"
-                            id="atividade-horaFim" 
+                            id="atividade-horaFim"
                             type="time"
                             v-model="atividade.horaFim" required />
                     </b-form-group>
                 </div>
                 <div class="rcol-12 col-md-3">
                     <b-form-group label="Duração: (em minutos)" label-for="atividade-duracao">
-                        <b-form-input 
-                            id="atividade-duracao" 
+                        <b-form-input
+                            id="atividade-duracao"
                             type="text"
                             v-model="atividade.duracao"
                             placeholder="0 minuto(s)"
@@ -111,7 +111,7 @@
                             <div class="rcol-12 col-md-8">
                                 <b-form-group label="Descricao:" label-for="search-descricao">
                                     <b-form-input
-                                        id="search-descricao" 
+                                        id="search-descricao"
                                         type="text"
                                         v-model="search.descricao"
                                         placeholder="Pesquise pela descrição..."
@@ -136,7 +136,7 @@
                             <div class="rcol-12 col-md-3">
                                 <b-form-group label="Data de:" label-for="search-data-of">
                                     <b-form-input
-                                        id="search-data-of" 
+                                        id="search-data-of"
                                         type="date"
                                         v-model="search.dataDe"
                                         @keyup.native.enter="onEnter" />
@@ -145,7 +145,7 @@
                             <div class="rcol-12 col-md-3">
                                 <b-form-group label="Até:" label-for="search-data-until">
                                     <b-form-input
-                                        id="search-data-until" 
+                                        id="search-data-until"
                                         type="date"
                                         v-model="search.dataAte"
                                         @keyup.native.enter="onEnter" />
@@ -182,10 +182,45 @@
                         <i class="fa fa-trash"></i>
                     </b-button>
                 </template>
-                <template slot="sync" slot-scope="data">
-                    <b-button v-if="data.item.tarefa !== null && data.item.tarefa !== ''" variant="info" @click="syncAtividade(data.item)" class="mr-2">
+                <template class="sync-column" slot="sync" slot-scope="data">
+                    <b-button v-b-tooltip.hover
+                        title="Lançar nova atividade no Redmine"
+                        v-if="data.item.redmineSyncPendency === 'insert' || (!data.item.redmineSyncPendency && data.item.tarefa && !data.item.redmineTaskId)"
+                        variant="outline-success"
+                        @click="saveInRedmine(data.item, 'insert')"
+                        class="mr-2">
+                        <i class="fa fa-paper-plane"></i>
+                    </b-button>
+                    <b-button v-b-tooltip.hover
+                        title="Atualizar atividade no Redmine"
+                        v-if="data.item.redmineSyncPendency === 'update'"
+                        variant="outline-success"
+                        @click="saveInRedmine(data.item, 'update')"
+                        class="mr-2">
                         <i class="fa fa-retweet"></i>
                     </b-button>
+                    <b-button v-b-tooltip.hover
+                        title="Remover este lançamento do Redmine"
+                        v-if="data.item.redmineSyncPendency === 'remove'"
+                        variant="outline-success"
+                        @click="saveInRedmine(data.item, 'remove')"
+                        class="mr-2">
+                        <i class="fa fa-trash"></i>
+                    </b-button>
+                    <b-button v-b-tooltip.hover
+                        title="Remover atividade de uma tarefa antiga e lançar em uma nova tarefa no Redmine"
+                        v-if="data.item.redmineSyncPendency === 'replace'"
+                        variant="outline-success"
+                        @click="saveInRedmine(data.item, 'replace')"
+                        class="mr-2">
+                        <i class="fa fa-exchange"></i>
+                    </b-button>
+                    <i id="sync-check"
+                        v-b-tooltip.hover
+                        title="Sincronizado"
+                        class="fa fa-check"
+                        v-if="!data.item.redmineSyncPendency && data.item.tarefa && data.item.redmineTaskId">
+                    </i>
                 </template>
             </b-table>
             <b-pagination size="md" v-model="page" :total-rows="count" :per-page="limit">
@@ -242,7 +277,23 @@ export default {
             page: 1,
             limit: 0,
             count: 0,
-            fields: [
+            fields: []
+        }
+    },
+    computed: {
+        usuarioLogado: function() {
+            // Pega o usuário logado
+            const json = localStorage.getItem(userKey)
+            // Transforma o json em objeto
+            return JSON.parse(json)
+        },
+        icon() {
+            return this.$store.state.isCollapseVisible ? "fa-angle-up" : "fa-angle-down"
+        }
+    },
+    methods: {
+        setGridColumns() {
+            let array = [
                 { key: 'tarefa', label: 'Task', sortable: true },
                 { key: 'descricao', label: 'Descrição', sortable: true },
                 { key: 'tipoAtividade.descricao', label: 'Tipo atividade', sortable: true },
@@ -258,29 +309,13 @@ export default {
                     formatter: value => `${value} minuto(s)` },
                 { key: 'editar', label: 'Editar' },
                 { key: 'excluir', label: 'Excluir' },
-                { key: 'sync', label: 'Sync' }
-            ]
-        }
-    },
-    computed: {
-        usuarioLogado: function() {
-            // Pega o usuário logado
-            const json = localStorage.getItem(userKey)
-            // Transforma o json em objeto
-            return JSON.parse(json)
-        },
-        icon() {
-            return this.$store.state.isCollapseVisible ? "fa-angle-up" : "fa-angle-down"
-        }
-    },
-    methods: {
-        syncAtividade(atividade) {
-            const url = `${baseApiUrl}/atividades/sync/${atividade.id}`
-            axios.post(url).then(res => {
-                this.$toasted.success('Sincronizado com sucesso!', {icon: 'check'});
-            }).catch(error => {
-                this.$toasted.error(error);
-            })
+            ];
+
+            if (this.usuarioLogado.redmineApiKey) {
+                array.push({ key: 'sync', label: 'Redmine' });
+            }
+
+            this.fields = array;
         },
         loadAtividades() {
             const url = `${baseApiUrl}/atividade?page=${this.page}&usuario=${this.usuarioLogado.id}`
@@ -305,6 +340,12 @@ export default {
                     this.reset()
                 })
                 .catch(showError)
+        },
+        saveInRedmine(item, operation) {
+            return axios.post(`${baseApiUrl}/redmine/sync/${operation}`, item).then(() => {
+                this.$toasted.global.defaultSuccess();
+                this.reset()
+            }).catch(showError)
         },
         remove() {
             const id = this.atividade.id
@@ -340,7 +381,7 @@ export default {
             const dataDe = this.search.dataDe ? this.search.dataDe : null
             const dataAte = this.search.dataAte ? this.search.dataAte : null
 
-            const url = 
+            const url =
                 `${baseApiUrl}/atividades/search/${this.page}/${this.usuarioLogado.id}/${tarefa}/${descricao}/${idTipoAtividade}/${dataDe}/${dataAte}`
 
             axios.get(url).then(res => {
@@ -375,7 +416,7 @@ export default {
                 var minInicio = parseInt(this.atividade.horaInicio.split(':')[1])
                 var horaFim = parseInt(this.atividade.horaFim.split(':')[0])
                 var minFim = parseInt(this.atividade.horaFim.split(':')[1])
-        
+
                 var horaDiferanca = (horaFim - horaInicio) * 60
                 var minDiferanca = minFim - minInicio
 
@@ -393,7 +434,7 @@ export default {
         },
         onEnter: function() {
             this.pressSearchAtividades()
-        }
+        },
     },
     watch: {
         page() {
@@ -404,7 +445,7 @@ export default {
             }
         },
         'atividade.horaInicio': [
-            'updateDuracao', 
+            'updateDuracao',
             function() {
                 this.updateHoraFim()
             }
@@ -414,6 +455,7 @@ export default {
     mounted() {
         this.loadAtividades()
         this.loadTipoAtividades()
+        this.setGridColumns()
     }
 }
 </script>
@@ -426,6 +468,11 @@ export default {
 
     #search-buttons {
         padding-top: 31px;
+    }
+
+    #sync-check {
+        color: green;
+        font-size: large;
     }
 
 </style>

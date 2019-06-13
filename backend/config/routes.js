@@ -84,9 +84,9 @@ module.exports = app => {
         .put(app.api.atividade.save)
         .delete(app.api.atividade.remove)
 
-    app.route('/redmine/sync/:id') // TEMP - REMOVER
-        .all(app.config.passport.authenticate()) // TEMP - REMOVER
-        .post(app.api.redmine.sync) // TEMP - REMOVER
+    app.route('/redmine/sync/:operation')
+        .all(app.config.passport.authenticate())
+        .post(app.api.syncRedmine.syncByOperation)
 
     app.route('/atividades/search/:page/:idUsuario/:tarefa/:descricao/:idTipoAtividade/:dataDe/:dataAte')
         .all(app.config.passport.authenticate())

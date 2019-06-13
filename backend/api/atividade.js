@@ -2,11 +2,7 @@
 
 module.exports = app => {
     const { existsOrError, notExistsOrError, objectContainsIdOrErro, validateHourStartEnd, validateTask } = app.api.validation
-    const INSERT = 'insert';
-    const REPLACE = 'replace';
-    const UPDATE = 'update';
-    const REMOVE = 'remove';
-    const ERROR = 'error';
+    const {generalSync, removeSync} = app.api.syncRedmine;
 
     const save = async (req, res) => {
         const atividade = { ...req.body }
@@ -53,7 +49,7 @@ module.exports = app => {
             app.db('atividade')
                 .update(atividade)
                 .where({ id: atividade.id })
-                .then(() => syncWithRedmine(oldDbAtividade, atividade, res))
+                .then(() => generalSync(oldDbAtividade, atividade, res))
                 .catch(err => {
                     return res.status(500).send(err);
                 });
@@ -63,7 +59,7 @@ module.exports = app => {
                 .returning('id')
                 .then(id => {
                     atividade.id = id[0];
-                    return syncWithRedmine(null, atividade, res);
+                    return generalSync(null, atividade, res);
                 })
                 .catch(err => {
                     return res.status(500).send(err);
@@ -71,190 +67,17 @@ module.exports = app => {
         }
     }
 
-    const syncWithRedmine = async (oldAtividade, atividade, res) => {
-        const action = getSyncAction(oldAtividade, atividade);
-
-        if (!action) {
-            return res.status(201).send();
-        }
-
-        const {redmineId, redmineApiKey, redmineAllowSync} = await app.db('usuario')
-            .select('redmineApiKey','redmineId','redmineAllowSync')
-            .where({id: atividade.idUsuario})
-            .first()
-            .then(response => {
-                return {
-                    redmineId: response.redmineId,
-                    redmineApiKey: response.redmineApiKey,
-                    redmineAllowSync: response.redmineAllowSync,
-                };
-            })
-            .catch(e => {
-                console.log(e);
-            })
-
-        if (!redmineAllowSync) {
-            return res.status(201).send();
-        }
-
-        const {url} = await app.db('redmine')
-            .select('url')
-            .where({id: redmineId})
-            .first()
-            .catch(e => {
-                console.log(e);
-            });
-
-        const redmine = new Redmine(url, {apiKey: redmineApiKey})
-        const activity_id = await getActivityId(atividade.idTipoAtividade, redmineId)
-
-        switch(action) {
-            case INSERT:
-                const time_entry = {
-                    time_entry: {
-                        issue_id: atividade.tarefa,
-                        spent_on: atividade.data.substr(0,10),
-                        activity_id,
-                        comments: atividade.descricao,
-                        hours: atividade.duracao / 60
-                    }
-                };
-
-                return redmine.create_time_entry(time_entry, (err, data) => {
-                    if (err) {
-                        console.log(err);
-                        return res.status(500).send(err);
-                    }
-                    return app.db('atividade')
-                        .update({
-                            redmineTaskId: data.time_entry.id
-                        })
-                        .where({id: atividade.id})
-                        .then(res.status(201).send())
-                        .catch(error => {
-                            console.log(error);
-                            return res.status(500).send(error);
-                        });
-                });
-
-            case REPLACE:
-                const another_time_entry = {
-                    time_entry: {
-                        issue_id: atividade.tarefa,
-                        spent_on: atividade.data.substr(0,10),
-                        activity_id,
-                        comments: atividade.descricao,
-                        hours: atividade.duracao / 60
-                    }
-                };
-
-                return redmine.delete_time_entry(atividade.redmineTaskId, (e, data) => {
-                    if (e) {
-                        console.log(e);
-                        return res.status(500).send(err);
-                    }
-                    return redmine.create_time_entry(another_time_entry, (err, data) => {
-                        if (err) {
-                            console.log(err);
-                            return res.status(500).send(err);
-                        }
-                        return app.db('atividade')
-                            .update({
-                                redmineTaskId: data.time_entry.id
-                            })
-                            .where({id: atividade.id})
-                            .then(res.status(201).send())
-                            .catch(error => {
-                                console.log(error);
-                                return res.status(500).send(error);
-                            });
-                    });
-                });
-
-            case UPDATE:
-                const updated_time_entry = {
-                    time_entry: {
-                        issue_id: atividade.tarefa,
-                        spent_on: atividade.data.substr(0,10),
-                        activity_id,
-                        comments: atividade.descricao,
-                        hours: atividade.duracao / 60
-                    }
-                };
-
-                return redmine.update_time_entry(atividade.redmineTaskId, updated_time_entry, (err, data) => {
-                    if (err) {
-                        console.log(err);
-                        return res.status(500).send(err);
-                    }
-                    return res.status(201).send();
-                });
-
-            case REMOVE:
-                return redmine.delete_time_entry(atividade.redmineTaskId, (err, data) => {
-                    if (err) {
-                        console.log(err);
-                        return res.status(500).send(err);
-                    }
-                    return app.db('atividade')
-                        .update({
-                            redmineTaskId: null
-                        })
-                        .where({id: atividade.id})
-                        .then(res.status(201).send())
-                        .catch(error => {
-                            console.log(error);
-                            return res.status(500).send(error);
-                        });
-                });
-            default:
-                return res.status(500).send(err);
-        }
-    }
-
-    function getSyncAction(oldAtividade, atividade) {
-        const {tarefa: oldTarefa} = oldAtividade || {};
-        const {tarefa} = atividade;
-
-        if (!oldAtividade) {
-            if (tarefa) {
-                return INSERT;
-            } else {
-                return null;
-            }
-        } else {
-            if (!oldTarefa && !tarefa) {
-                return null;
-            }
-            if (oldTarefa && tarefa && oldTarefa !== tarefa) {
-                return REPLACE;
-            }
-            if (oldTarefa && tarefa && oldTarefa === tarefa) {
-                return UPDATE;
-            }
-            if (oldTarefa && !tarefa) {
-                return REMOVE;
-            }
-            return ERROR;
-        }
-    }
-
-    function getActivityId(idTipoAtividade, redmineId) {
-        return app.db('redmineActivities')
-            .select('activityExternalId')
-            .join('redmineActivities_tipoAtividade', 'redmineActivities_tipoAtividade.redmineActivitiesId', 'redmineActivities.id')
-            .whereRaw(`"redmineActivities"."redmineId" = ${redmineId} AND "redmineActivities_tipoAtividade"."tipoAtividadeId" = ${idTipoAtividade}`)
-            .first()
-            .then(res => res.activityExternalId)
-            .catch(e => {
-                console.log(e);
-            });
-    }
-
     const remove = async (req, res) => {
+        const {id} = req.params;
+        const oldAtividade = await app.db('atividade')
+            .where({id})
+            .first()
+            .catch(err => res.status(500).send(err));
+
         try {
             const rowsDeleted = await app.db('atividade')
-                .where({ id: req.params.id }).del()
+                .where({id})
+                .del()
 
             try {
                 existsOrError(rowsDeleted, 'Tipo Atividade não foi encontrado.')
@@ -262,7 +85,7 @@ module.exports = app => {
                 return res.status(400).send(msg)
             }
 
-            res.status(204).send()
+            return removeSync(oldAtividade, res);
         } catch(msg) {
             res.status(500).send(msg)
         }
@@ -277,7 +100,8 @@ module.exports = app => {
         const count = await getGetCount(idUsuario)
 
         app.db({ a: 'atividade', ta: 'tipoAtividade' })
-            .select('a.id', 'a.idUsuario', 'a.horaInicio', 'a.horaFim', 'a.duracao', 'a.tarefa', 'a.descricao', 'a.data', 'a.redmineTaskId',
+            .select('a.id', 'a.idUsuario', 'a.horaInicio', 'a.horaFim', 'a.duracao', 'a.tarefa',
+                'a.descricao', 'a.data', 'a.redmineTaskId', 'a.redmineSyncPendency',
                 { idTipoAtividade: 'ta.id', tipoAtividadeDescricao: 'ta.descricao' } )
             .limit(limit).offset(page * limit - limit)
             .where({'a.idUsuario': idUsuario}) // Filtro por usuário
@@ -315,7 +139,9 @@ module.exports = app => {
         const amount = await getAmountDuracao(req)
 
         app.db({ a: 'atividade', ta: 'tipoAtividade' })
-            .select('a.id', 'a.idUsuario', 'a.horaInicio', 'a.horaFim', 'a.duracao', 'a.tarefa', 'a.descricao', 'a.data', 'a.redmineTaskId', { idTipoAtividade: 'ta.id', tipoAtividadeDescricao: 'ta.descricao' } )
+            .select('a.id', 'a.idUsuario', 'a.horaInicio', 'a.horaFim', 'a.duracao', 'a.tarefa',
+                    'a.descricao', 'a.data', 'a.redmineTaskId', 'a.redmineSyncPendency',
+                    { idTipoAtividade: 'ta.id', tipoAtividadeDescricao: 'ta.descricao' } )
             .modify(function(queryBuilder) {
                 if (req.params.idUsuario && req.params.idUsuario != 'null') {
                     queryBuilder.where({ 'a.idUsuario': req.params.idUsuario })
