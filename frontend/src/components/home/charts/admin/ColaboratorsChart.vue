@@ -1,39 +1,58 @@
 <template>
 	<div>
-		<b-card>
-			<b-form-row id="indicator">
-				<div class="rcol-12 col-md-2">
-                    <b-form-group label="Selecione o mês: *" label-for="filter-month">
-                        <b-form-select
-                            id="filter-month"
-                            :options="months"
-							v-model="search.actualMonth"
-							>
-                        </b-form-select>
-                    </b-form-group>
-				</div>
-				<div class="rcol-12 col-md-2">
-                    <b-form-group label="Selecione o ano: *" label-for="filter-year">
-                        <b-form-select
-                            id="filter-year"
-                            :options="years"
-							v-model="search.actualYear"
-							>
-                        </b-form-select>
-                    </b-form-group>
-				</div>
-				<div class="col-12 col-md-2" id="search-buttons">
-					<b-button variant="danger" class="mr-1" @click="resetSearch">
-						<i class="fa fa-remove"></i>
-					</b-button>
-					<b-button variant="primary" @click="loadData">
-						<i class="fa fa-search"></i>
-					</b-button>
-				</div>
-			</b-form-row>
-		</b-card>
-		<br>
-		<b-card class="table-hour-geral">
+		<b-button
+			id="search-colaborators-charts-button"
+			@click="toggleCollapse"
+			variant="dark"
+			v-b-toggle.search>
+				Pesquisa
+			<i class="fa fa-lg" :class="icon"></i>
+		</b-button>
+		<b-tooltip ref="tooltip" target="search-colaborators-charts-button" placement="bottomright">
+			Pesquisar mês e ano
+		</b-tooltip>
+		<div class="pt-2">
+			<b-collapse id="search" accordion="accordion-colaborators-charts" role="tabpanel-colaborators-charts">
+				<b-card-group deck>
+					<b-card footer-tag="footer">
+						<b-form-row id="indicator">
+							<div class="rcol-12 col-md-2">
+								<b-form-group label="Selecione o mês: *" label-for="filter-month">
+									<b-form-select
+										id="filter-month"
+										:options="months"
+										v-model="search.actualMonth"
+										>
+									</b-form-select>
+								</b-form-group>
+							</div>
+							<div class="rcol-12 col-md-2">
+								<b-form-group label="Selecione o ano: *" label-for="filter-year">
+									<b-form-select
+										id="filter-year"
+										:options="years"
+										v-model="search.actualYear"
+										>
+									</b-form-select>
+								</b-form-group>
+							</div>
+						</b-form-row>
+						<div slot="footer" class="float-right">
+							<b-button variant="danger" class="mr-1" @click="resetSearch">
+								<i class="fa fa-remove"></i>
+								Limpar
+							</b-button>
+							<b-button variant="primary" @click="loadData">
+								<i class="fa fa-search"></i>
+								Pesquisar
+							</b-button>
+						</div>
+					</b-card>
+				</b-card-group>
+			</b-collapse>
+		</div>	
+
+		<b-card class="table-hour-geral" deck>
 			<b-table
 				:fields=fields
 				:items=itemsTableGeral
@@ -48,7 +67,7 @@
 						<th class="table-title" :colspan="fields.length">RELATÓRIO GERENCIAL</th>
 					</tr>
 					<tr>
-						<th class="month-title" :colspan="fields.length">Janeiro</th>
+						<th class="month-title" :colspan="fields.length">{{ searchedMonth }}</th>
 					</tr>
 				</template>
 			</b-table>
@@ -118,6 +137,7 @@ export default {
 			fields : [],
 			years : years,
 			search : { ...initialSearch },
+			searchedMonth: '',
 			itemsTableGeral: [],
 			totalHoursPerActivity: [
 				{ key : 1, label : "Break", total : "25h43min" },
@@ -192,10 +212,20 @@ export default {
 			const url = `${baseApiUrl}/colaborators-chart/${dateFrom}/${dateUntil}`
 			axios.get(url).then(res => {
 				this.itemsTableGeral = res.data
+
+				this.searchedMonth = months[this.search.actualMonth]
 			})
 		},
 		resetSearch() {
             this.search = { ...initialSearch }
+        },
+		toggleCollapse() {
+            this.$store.commit('toggleCollapse')
+        },
+	},
+	computed: {
+		icon() {
+            return this.$store.state.isCollapseVisible ? "fa-angle-up" : "fa-angle-down"
         }
 	},
 	mounted: function() {

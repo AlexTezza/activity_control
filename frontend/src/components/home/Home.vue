@@ -7,7 +7,7 @@
         <b-container fluid>
             <b-form-row v-if="!user.admin">
                 <div class="chart-view">
-                    <Charts />
+                    <UserChart />
                 </div>
             </b-form-row>
 
@@ -17,7 +17,7 @@
                         <b-tab title="Meus indicadores">
                             <b-form-row>
                                 <div class="chart-view">
-                                    <Charts />
+                                    <UserChart />
                                 </div>
                             </b-form-row>
                         </b-tab>
@@ -38,14 +38,14 @@
 <script>
 import PageTitle from '../template/PageTitle'
 import { mapState } from 'vuex' 
-import Charts from './charts/Charts'
-import ColaboratorsChart from './ColaboratorsChart'
+import UserChart from './charts/UserChart'
+import ColaboratorsChart from './charts/admin/ColaboratorsChart'
 
 export default {
     name: 'Home',
     components: { 
         PageTitle, 
-        Charts,
+        UserChart,
         ColaboratorsChart
     },
     data: function() {
