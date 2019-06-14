@@ -53,14 +53,14 @@
                                     <b-form-select
                                         id="search-tipoAtividade"
                                         v-model="search.tipoAtividade.id" >
-
                                         <template slot="first">
                                             <option first :value="null">-- Selecione --</option>
 
                                             <optgroup v-for="(func) in functions" v-bind:key="func.id" :label="func.description">
-                                                <option v-for="(item) in filterItemsByFunction(func.id, tipoAtividades)" 
-                                                    v-bind:key="item.value" 
-                                                    :value="item.value">{{item.text}}</option>
+                                                <option v-for="(item) in filterItemsByFunction(func.id, tipoAtividades)"
+                                                    v-bind:key="item.value"
+                                                    :value="item.value">{{item.text}}
+                                                </option>
                                             </optgroup>
 
                                         </template>
@@ -92,7 +92,7 @@
                             </b-col>
                             <b-col class="text-right">
                                 <b-button
-                                    variant="danger"
+                                    variant="light"
                                     class="mr-1"
                                     @click="resetSearch"
                                     v-b-tooltip.hover title="Limpar pesquisa">
@@ -180,8 +180,8 @@
                                             </option>
 
                                             <optgroup v-for="(func) in functions" v-bind:key="func.id" :label="func.description">
-                                                <option v-for="(item) in filterItemsByFunction(func.id, tipoAtividades)" 
-                                                    v-bind:key="item.value" 
+                                                <option v-for="(item) in filterItemsByFunction(func.id, tipoAtividades)"
+                                                    v-bind:key="item.value"
                                                     :value="item.value">{{item.text}}</option>
                                             </optgroup>
 
@@ -429,12 +429,18 @@ export default {
             this.search.tipoAtividade.id = null
             this.search.horaTotal = 0
             this.modeListagem = 'normal'
+            this.data = today
+            this.loadAtividades()
         },
         loadTipoAtividades() {
             const url = `${baseApiUrl}/getAll/tipoAtividade`
             axios.get(url).then(res => {
                 this.tipoAtividades = res.data.map(tipoCategoria => {
-                    return { value: tipoCategoria.id, text: tipoCategoria.descricao, idFuncao: tipoCategoria.idFuncao }
+                    return {
+                        value: tipoCategoria.id,
+                        text: tipoCategoria.descricao,
+                        idFuncao: tipoCategoria.idFuncao
+                    }
                 })
             })
         },

@@ -34,11 +34,16 @@
 							</div>
 						</b-form-row>
 						<div slot="footer" class="float-right">
-							<b-button variant="danger" class="mr-1" @click="resetSearch">
+							<b-button
+								variant="light"
+								class="mr-1"
+								@click="resetSearch">
 								<i class="fa fa-remove"></i>
 								Limpar
 							</b-button>
-							<b-button variant="primary" @click="loadData">
+							<b-button
+								variant="primary"
+								@click="loadData">
 								<i class="fa fa-search"></i>
 								Pesquisar
 							</b-button>
