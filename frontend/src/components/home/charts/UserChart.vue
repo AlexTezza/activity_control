@@ -69,6 +69,7 @@
 import axios from 'axios'
 import { baseApiUrl, userKey } from '@/global'
 import moment from 'moment'
+import { minutesToHours, formatterTooltip, percentualPerActivity } from '../../utils'
 
 let totalHours = null;
 
@@ -77,39 +78,10 @@ const initialSearch = {
     dataAte: moment().endOf('month').format('YYYY-MM-DD')
 }
 
-function formatterTooltip(val) {
-	if (val) {
-		let hours = val.toString().split('.')[0]
-		let minutes = val.toString().split('.')[1]
-		if (minutes && minutes !== '00') {
-			if (minutes.length === 1) {
-				minutes = minutes + "0"
-			}
-			return hours + "h" + minutes + "min"
-		}
-		return hours + "h"
-	}
-	return "0h00min"
-}
-
-function minutesToHours(totalMinutes) {
-	let hours = Math.trunc(totalMinutes / 60)
-	let minutes = totalMinutes % 60
-
-	if (hours < 10) {
-		hours = `0${hours}`
-	}
-	if (minutes < 10) {
-		minutes = `0${minutes}`
-	}
-
-	return formatterTooltip(`${hours}.${minutes}`)
-}
-
 const defaultText = 'Nenhum dado para ser exibido'
 
 export default {
-	name: 'Charts',
+	name: 'UserChart',
 	data: function() {
 		return {
 			search : { ...initialSearch },
@@ -119,7 +91,7 @@ export default {
 				plotOptions: {
 					bar: {
 						horizontal: false,
-						columnWidth: '60%',
+						distributed: true,
 						dataLabels: {
 							position: 'top',
 						},
@@ -131,6 +103,7 @@ export default {
 					formatter: function(val) {
 						return formatterTooltip(val)
 					},
+					hideOverflowingLabels: false,
 					style: {
 						fontSize: '12px',
 						colors: ["#304758"]
@@ -138,7 +111,7 @@ export default {
 				},
 				stroke: {
 					show: true,
-					width: 2,
+					width: 6,
 					colors: ['transparent']
 				},
 				xaxis: {
@@ -171,6 +144,9 @@ export default {
 				labels: [],
 				legend: {
 					position: 'left',
+					formatter: function(val, serie) {
+						return percentualPerActivity(val, serie, totalHours)
+					}
 				},
 				tooltip: {
 					y: {
@@ -189,7 +165,7 @@ export default {
 						expandOnClick: true,
 						dataLabels: {
 							offset: 0,
-							minAngleToShowLabel: 2
+							minAngleToShowLabel: 3
 						},
 						donut: {
 							labels: {
@@ -241,7 +217,7 @@ export default {
 				// Clean the data of Donut Chart
 				this.chartDonutData = [0]
 				// Clean the total hour variable
-				totalHours = 0;
+				totalHours = 0
 
 				if (res.data && res.data.result && res.data.result.length > 0) {
 					this.chartSerieName = []
@@ -249,9 +225,9 @@ export default {
 
 					res.data.result.forEach((element) => {
 						this.chartSerieName.push(element.name)
-						this.chartBarData.push(element.data)
-						this.chartDonutData.push(Number.parseFloat(element.data))
-						totalHours += Number.parseFloat(element.total)
+						this.chartBarData.push(element.hours)
+						this.chartDonutData.push(Number.parseFloat(element.hours))
+						totalHours += Number.parseFloat(element.minutes)
 					});
 				}
 				this.chartBarOptions = {  xaxis: {  categories: this.chartSerieName  }}
@@ -275,6 +251,10 @@ export default {
 </script>
 
 <style>
+
+.template {
+	height: 100%;
+}
 
 .template-view {
 	display: flex;

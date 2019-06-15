@@ -1,5 +1,5 @@
 module.exports = app => {
-    const { existsOrError, notExistsOrError, objectContainsIdOrErro } = app.api.validation
+    const { existsOrError, notExistsOrError } = app.api.validation
 
     const save = async (req, res) => {
         const tipoAtividade = { ...req.body }
@@ -113,5 +113,27 @@ module.exports = app => {
             .catch(err => res.status(500).send(err))
     }
 
-    return { save, remove, get, getAll, getById }
+    const headerTableHourReport = async (req, res) => {
+        const page = req.query.page || 1
+
+        const result = await app.db('tipoAtividade')
+            .count('id')
+            .first()
+        const count = parseInt(result.count)
+
+        app.db('tipoAtividade')
+            .select('id', 'descricao', 'sigla')
+            .limit(limit).offset(page * limit - limit)
+            .orderBy('descricao')
+            .then(tipoAtividades => tipoAtividades.map(tipoAtividade => {
+                return { key: tipoAtividade.sigla, label: tipoAtividade.descricao }
+            }))
+            .then(tipoAtividades => {
+                tipoAtividades.unshift({ key : "name", label : "" })
+                res.json(tipoAtividades)
+            })
+            .catch(err => res.status(500).send(err))
+    }
+
+    return { save, remove, get, getAll, getById, headerTableHourReport }
 }
