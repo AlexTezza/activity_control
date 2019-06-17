@@ -48,7 +48,10 @@
 
                 <div class="col-12 col-md-12 text-right">
                     <b-button
+                        variant="light"
+                        class="mr-1"
                         @click="reset">
+                        <i class="fa fa-remove"></i>
                         Cancelar
                     </b-button>
                     <b-button

@@ -49,7 +49,13 @@
                     </b-form-group>
                 </div>
                 <div class="col-12 col-md-12 text-right">
-                    <b-button @click="reset">Cancelar</b-button>
+                    <b-button
+                        variant="light"
+                        class="mr-1"
+                        @click="reset">
+                        <i class="fa fa-remove"></i>
+                        Cancelar
+                    </b-button>
                     <b-button
                         class="ml-2"
                         variant="primary" v-if="mode === 'save'"
