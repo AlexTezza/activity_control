@@ -1,17 +1,24 @@
 <template>
-    <div class="user-dropdown">
-        <div class="user-button">
-            <div class="user-dropdown-img">
+    <div id="user-dropdown" class="user-dropdown">
+        <div class="user-button" @click="onChangeDropDown">
+            <span class="user-dropdown-img">
                 <Gravatar :email="user.email" alt="User" />
                 <label class="user-name">{{userName}}</label>
-            </div>
+            </span>
             <i class="fa fa-angle-down"></i>
         </div>
-        <div class="user-dropdown-content">
+        <div class="user-dropdown-content"
+            v-if='showDropdownContent'
+            @click="onChangeDropDown"
+            @mouseleave="onChangeDropDown">
             <router-link to="/admin" v-if="user.admin">
-                <i class="fa fa-cog"></i> Administração
+                <i class="fa fa-cog"></i>
+                Administração
             </router-link>
-            <a href @click.prevent="logout"><i class="fa fa-sign-out"></i> Sair</a>
+            <a href @click.prevent="logout">
+                <i class="fa fa-sign-out"></i>
+                Sair
+            </a>
         </div>
     </div>
 </template>
@@ -26,7 +33,8 @@ export default {
     components: { Gravatar },
     data: function() {
         return {
-            userName: ''
+            userName: '',
+            showDropdownContent: false,
         }
     },
     computed: mapState(['user']),
@@ -40,7 +48,7 @@ export default {
                 if (lastPosition === 1) {
                     this.userName = this.user.nome
                 } else {
-                    this.userName = userNameArray[0] + ' ' + userNameArray[lastPosition]
+                    this.userName = `${userNameArray[0]} ${userNameArray[lastPosition]}`
                 }
             } else {
                 this.userName = userNameArray[0]
@@ -51,7 +59,10 @@ export default {
             localStorage.removeItem(userKey)
             this.$store.commit('setUser', null)
             this.$router.push({ name: 'auth' })
-        }
+        },
+        onChangeDropDown: function() {
+            this.showDropdownContent = !this.showDropdownContent;
+        },
     },
     mounted() {
         this.formatUserName()
@@ -81,6 +92,7 @@ export default {
 
     .user-dropdown-img {
         margin: 0px 10px;
+        position: relative;
     }
 
     .user-dropdown-img > img {
@@ -89,30 +101,20 @@ export default {
     }
 
     .user-dropdown-content {
+        display: block;
         position: absolute;
         right: 0px;
         background-color: #f9f9f9;
         min-width: 170px;
         box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-        padding: 10px;
         z-index: 1;
-        display: flex;
-        flex-direction: column;
-        flex-wrap: wrap;
-        visibility: hidden;
-        opacity: 0;
-        transition: visibility 0s, opacity 0.5s linear;
-    }
-
-    .user-dropdown:hover .user-dropdown-content {
-        visibility: visible;
-        opacity: 1;
     }
 
     .user-dropdown-content a {
         text-decoration: none;
         color: #000;
         padding: 10px;
+        display: block;
     }
 
     .user-dropdown-content a:hover {
@@ -122,7 +124,9 @@ export default {
     }
 
     .user-name {
+        cursor: pointer;
         margin: 10px;
         font-weight: 200;
     }
+
 </style>
