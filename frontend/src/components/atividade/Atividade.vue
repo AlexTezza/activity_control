@@ -153,8 +153,8 @@
                                         id="atividade-tarefa"
                                         type="number"
                                         v-model="atividade.tarefa"
-                                                    placeholder="Nº Task do Redmine..."
-                                                    autofocus />
+                                        placeholder="Nº Task do Redmine..."
+                                        autofocus />
                                 </b-form-group>
                             </div>
                             <div class="col-12 col-md-7">
@@ -178,13 +178,11 @@
                                             <option first :value="null">
                                                 -- Selecione --
                                             </option>
-
                                             <optgroup v-for="(func) in functions" v-bind:key="func.id" :label="func.description">
                                                 <option v-for="(item) in filterItemsByFunction(func.id, tipoAtividades)"
                                                     v-bind:key="item.value"
                                                     :value="item.value">{{item.text}}</option>
                                             </optgroup>
-
                                         </template>
                                     </b-form-select>
                                     <b-form-input

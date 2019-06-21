@@ -1,7 +1,6 @@
 <template>
 	<div id="app" :class="{'hide-menu': !isMenuVisible || !user}">
 		<Header
-			title="MyTime"
 			:hideLogo="!user"
 			:hideToggle="!user"
 			:hideUserDropdown="!user" />
