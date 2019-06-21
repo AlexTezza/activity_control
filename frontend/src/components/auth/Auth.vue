@@ -28,8 +28,8 @@
                 placeholder="Confirme a Senha"
                 v-on:keyup.enter="onEnter">
 
-            <b-button v-if="showSignup" @click="sinup" class="rounded-0" variant="primary">Registrar</b-button>
-            <b-button v-else @click="signin" class="rounded-0" variant="primary">Entrar</b-button>
+            <b-button v-if="showSignup" @click="sinup" class="rounded-0" variant="primary" block >Registrar</b-button>
+            <b-button v-else @click="signin" class="rounded-0" variant="primary" block>Entrar</b-button>
 
             <a href @click.prevent="showSignup = !showSignup">
                 <span v-if="showSignup">Já tem cadastro? Acesse o Login!</span>

@@ -21,8 +21,7 @@
 									<b-form-select
 										id="filter-month"
 										:options="months"
-										v-model="search.actualMonth"
-										>
+										v-model="search.actualMonth">
 									</b-form-select>
 								</b-form-group>
 							</div>
@@ -55,8 +54,8 @@
 					</b-card>
 				</b-card-group>
 			</b-collapse>
-		</div>	
-		<b-card-group class="pt-4">		
+		</div>
+		<b-card-group class="pt-4">
 			<b-card class="table-hour-geral" deck>
 				<b-table
 					:fields=fields
@@ -65,8 +64,7 @@
 					bordered
 					responsive
 					hover
-					striped
-				>
+					striped>
 					<template slot="thead-top">
 						<tr>
 							<th class="table-title" :colspan="fields.length">RELATÓRIO GERENCIAL</th>
@@ -76,13 +74,10 @@
 						</tr>
 					</template>
 				</b-table>
-
-				<hr>
-
-				<div>
+				<div class="pt-4">
 					<b-card-group deck>
 						<b-card>
-							<h3>Totais</h3>
+							<h4>Totais</h4>
 							<table class="table table-hover">
 								<tbody v-for="(item) in totalHoursPerActivity" v-bind:key="item.key">
 									<tr>
@@ -97,7 +92,7 @@
 							</table>
 						</b-card>
 						<b-card>
-							<h3>Percentual de horas por tipo de atividade</h3>
+							<h4>Percentual de horas por tipo de atividade</h4>
 							<apexchart type="donut" :options="chartDonutOptions" :series="donutSeries"></apexchart>
 						</b-card>
 					</b-card-group>
@@ -117,7 +112,7 @@ const months = moment.localeData('pt-BR').months()
 const years = [ "2019" ]
 
 const initialSearch = {
-    actualMonth : 3,
+    actualMonth : moment().month(),
     actualYear : moment().year()
 }
 
@@ -216,7 +211,7 @@ export default {
 
 			const url = `${baseApiUrl}/colaborators-chart/${dateFrom}/${dateUntil}`
 			axios.get(url).then(res => {
-				
+
 				this.chartSerieName = [defaultText]
 				this.chartDonutData = [0]
 				totalHoursRealized = 0
@@ -236,7 +231,7 @@ export default {
 
 					this.chartSerieName = res.data.optionsSeries.options
 					this.chartDonutData = res.data.optionsSeries.series
-				} 
+				}
 				this.chartDonutOptions = { labels: this.chartSerieName }
 				this.donutSeries = this.chartDonutData
 			})
