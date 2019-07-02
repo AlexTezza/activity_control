@@ -106,7 +106,7 @@
 import axios from 'axios'
 import { baseApiUrl } from '@/global'
 import moment from 'moment'
-import { minutesToHours, percentualPerActivity } from '../../../utils'
+import { minutesToHours, percentualPerActivity, formatterTooltip } from '../../../utils'
 
 const months = moment.localeData('pt-BR').months()
 const years = [ "2019" ]
@@ -159,10 +159,11 @@ export default {
 						expandOnClick: true,
 						dataLabels: {
 							offset: 0,
-							minAngleToShowLabel: 3
+							minAngleToShowLabel: 4
 						},
 						donut: {
 							labels: {
+								show: true,
 								name: {
 									show: true,
 									color: '#304758',
@@ -176,7 +177,7 @@ export default {
 								total: {
 									show: true,
 									formatter: function() {
-										return totalHoursRealized
+										return formatterTooltip(totalHoursRealized)
 									}
 								}
 							}

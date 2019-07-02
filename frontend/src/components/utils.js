@@ -40,5 +40,3 @@ export function percentualPerActivity(val, serie, total) {
     }
     return val
 }
-
-export default { minutesToHours, formatterTooltip }

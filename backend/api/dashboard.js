@@ -9,7 +9,7 @@ module.exports = app => {
 
         let query = `
             select 
-                ta.descricao as name, fn_min_to_hrs(cast (sum(a.duracao) as int)) as hours, sum(a.duracao) as minutes
+                ta.descricao as name, sum(a.duracao) as minutes
             from atividade a inner join "tipoAtividade" ta on a."idTipoAtividade" = ta.id
                 where a."idUsuario" = ${req.params.idUsuario} 
                 and a.data >= '${req.params.dataDe}' 
