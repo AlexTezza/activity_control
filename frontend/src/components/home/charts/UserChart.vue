@@ -151,7 +151,7 @@ export default {
 				tooltip: {
 					y: {
 						formatter: function(val) {
-							return formatterTooltip(val)
+							return minutesToHours(val)
 						}
 					}
 				},
@@ -165,7 +165,7 @@ export default {
 						expandOnClick: true,
 						dataLabels: {
 							offset: 0,
-							minAngleToShowLabel: 3
+							minAngleToShowLabel: 4
 						},
 						donut: {
 							labels: {
@@ -177,7 +177,7 @@ export default {
 								value: {
 									show: true,
 									formatter: function(val) {
-										return formatterTooltip(val)
+										return minutesToHours(val)
 									}
 								},
 								total: {
@@ -225,8 +225,8 @@ export default {
 
 					res.data.result.forEach((element) => {
 						this.chartSerieName.push(element.name)
-						this.chartBarData.push(element.hours)
-						this.chartDonutData.push(Number.parseFloat(element.hours))
+						this.chartBarData.push(minutesToHours(element.minutes))
+						this.chartDonutData.push(Number.parseFloat(element.minutes))
 						totalHours += Number.parseFloat(element.minutes)
 					});
 				}
