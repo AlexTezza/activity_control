@@ -225,7 +225,7 @@ export default {
 
 					res.data.result.forEach((element) => {
 						this.chartSerieName.push(element.name)
-						this.chartBarData.push(minutesToHours(element.minutes))
+						this.chartBarData.push(minutesToHours(element.minutes, false))
 						this.chartDonutData.push(Number.parseFloat(element.minutes))
 						totalHours += Number.parseFloat(element.minutes)
 					});
