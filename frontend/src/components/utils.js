@@ -1,4 +1,4 @@
-export function minutesToHours(totalMinutes) {
+export function minutesToHours(totalMinutes, useFormatting = true) {
     if (totalMinutes) {
         let hours = Math.trunc(totalMinutes / 60)
         let minutes = totalMinutes % 60
@@ -9,8 +9,10 @@ export function minutesToHours(totalMinutes) {
         if (minutes < 10) {
             minutes = `0${minutes}`
         }
-    
-        return formatterTooltip(`${hours}.${minutes}`)
+
+        var hoursWithoutFormatting = `${hours}.${minutes}`
+
+        return useFormatting ? formatterTooltip(hoursWithoutFormatting) : hoursWithoutFormatting
     }
     return "0h00min"
 }

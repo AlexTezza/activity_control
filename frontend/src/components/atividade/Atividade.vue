@@ -426,7 +426,7 @@ export default {
             this.search = { ...initialSearch }
             this.search.tipoAtividade.id = null
             this.search.horaTotal = 0
-            this.modeListagem = 'normal'
+            this.modeListagem = null
             this.data = today
             this.loadAtividades()
         },
