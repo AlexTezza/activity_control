@@ -49,11 +49,11 @@ module.exports = app => {
         .get(app.api.tipoAtividade.getById)
         .put(app.api.tipoAtividade.save)
         .delete(app.api.tipoAtividade.remove)
-    
+
     app.route('/getAll/tipoAtividade')
         .all(app.config.passport.authenticate())
         .get(app.api.tipoAtividade.getAll)
-        
+
     app.route('/funcao')
         .all(app.config.passport.authenticate())
         .get(app.api.funcao.get)
@@ -88,7 +88,6 @@ module.exports = app => {
         .all(app.config.passport.authenticate())
         .get(app.api.atividade.search)
 
-    
     app.route('/dashboard/user/:idUsuario/:dataDe/:dataAte')
         .all(app.config.passport.authenticate())
         .get(app.api.dashboard.searchHoursByActivityType)
@@ -96,4 +95,12 @@ module.exports = app => {
     app.route('/colaborators-chart/:dateFrom/:dateUntil')
         .all(app.config.passport.authenticate())
         .get(admin(app.api.colaboratorsChart.getColaboratorsHourPerActivityType))
+
+    app.route('/playStopAtividade')
+        .all(app.config.passport.authenticate())
+        .post(app.api.playStopAtividade.save)
+
+    app.route('/playStopAtividade/:id')
+        .all(app.config.passport.authenticate())
+        .put(app.api.playStopAtividade.save)
 }

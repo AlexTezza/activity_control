@@ -370,6 +370,9 @@ export default {
                 })
                 .catch(showError)
         },
+        play(saveAndContinue = false) {
+
+        },
         remove() {
             const id = this.atividade.id
             axios.delete(`${baseApiUrl}/atividade/${id}`)

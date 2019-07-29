@@ -1,11 +1,11 @@
 ﻿module.exports = app => {
     const { existsOrError, notExistsOrError, objectContainsIdOrErro, validateHourStartEnd, validateTask } = app.api.validation
     const { formatterMinutesToHours } = app.api.utils
-    
+
     const save = async (req, res) => {
         const atividade = { ...req.body }
 
-        if (req.params.id) {
+        if (req.params && req.params.id) {
             atividade.id = req.params.id
         }
 
@@ -59,7 +59,7 @@
         try {
             const rowsDeleted = await app.db('atividade')
                 .where({ id: req.params.id }).del()
-            
+
             try {
                 existsOrError(rowsDeleted, 'Tipo Atividade não foi encontrado.')
             } catch(msg) {
@@ -115,9 +115,9 @@
 
     const search = async (req, res) => {
         const page = req.params.page || 1
-        
+
         const count = await getSearchCount(req)
-        
+
         const amount = await getAmountDuracao(req)
 
         app.db({ a: 'atividade', ta: 'tipoAtividade' })
@@ -135,7 +135,7 @@
                 if (req.params.idTipoAtividade && req.params.idTipoAtividade != 'null') {
                     queryBuilder.andWhere({ 'a.idTipoAtividade': req.params.idTipoAtividade })
                 }
-                if ((req.params.dataDe && req.params.dataDe != 'null') 
+                if ((req.params.dataDe && req.params.dataDe != 'null')
                     && (req.params.dataAte && req.params.dataAte != 'null')) {
 
                     queryBuilder.whereBetween( 'a.data', [req.params.dataDe, req.params.dataAte] )
@@ -173,13 +173,13 @@
 
     async function getGetCount(idUsuario) {
         const result = await app.db('atividade')
-            .where({'idUsuario': idUsuario}) 
+            .where({'idUsuario': idUsuario})
             .count('id')
             .first()
         return parseInt(result.count)
     }
 
-    async function getSearchCount(req) { 
+    async function getSearchCount(req) {
         const result = await app.db('atividade')
             .modify(function(queryBuilder) {
                 if (req.params.idUsuario && req.params.idUsuario != 'null') {
@@ -194,7 +194,7 @@
                 if (req.params.idTipoAtividade && req.params.idTipoAtividade != 'null') {
                     queryBuilder.where({ idTipoAtividade: req.params.idTipoAtividade })
                 }
-                if ((req.params.dataDe && req.params.dataDe != 'null') 
+                if ((req.params.dataDe && req.params.dataDe != 'null')
                     && (req.params.dataAte && req.params.dataAte != 'null')) {
 
                     queryBuilder.whereBetween( 'data', [req.params.dataDe, req.params.dataAte] )
@@ -206,7 +206,7 @@
                         queryBuilder.andWhere({ 'data': req.params.dataAte })
                     }
                 }
-            }) 
+            })
             .count('id')
             .first()
         return parseInt(result.count)
@@ -227,7 +227,7 @@
                 if (req.params.idTipoAtividade && req.params.idTipoAtividade != 'null') {
                     queryBuilder.where({ idTipoAtividade: req.params.idTipoAtividade })
                 }
-                if ((req.params.dataDe && req.params.dataDe != 'null') 
+                if ((req.params.dataDe && req.params.dataDe != 'null')
                     && (req.params.dataAte && req.params.dataAte != 'null')) {
 
                     queryBuilder.whereBetween( 'data', [req.params.dataDe, req.params.dataAte] )
@@ -239,7 +239,7 @@
                         queryBuilder.andWhere({ 'data': req.params.dataAte })
                     }
                 }
-            }) 
+            })
             .sum('duracao')
             .first()
 
