@@ -221,6 +221,7 @@ module.exports = app => {
     getSyncAction = (oldAtividade, atividade) => {
         const {tarefa: oldTarefa, redmineTaskId: oldRedmineTaskId} = oldAtividade || {};
         const {tarefa, redmineTaskId, redmineSyncPendency} = atividade;
+
         if (tarefa && redmineSyncPendency === REPLACE) {
             return REPLACE;
         }
