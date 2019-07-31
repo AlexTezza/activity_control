@@ -1,6 +1,7 @@
 <template>
 	<div id="app" :class="{'hide-menu': !isMenuVisible || !user}">
-		<Header title="Registro de Atividades" 
+		<Header
+			:hideLogo="!user"
 			:hideToggle="!user"
 			:hideUserDropdown="!user" />
 		<Menu v-if="user" />
@@ -47,7 +48,7 @@ export default {
 
 			if (res.data) {
 				this.$store.commit('setUser', userData)
-				
+
 				if (this.$mq === 'xs' || this.$mq === 'sm') {
 					this.$store.commit('toggleMenu', false)
 				}
@@ -71,7 +72,9 @@ export default {
 	}
 
 	body {
-		margin: 0;
+		height:100%;
+		padding:0;
+		margin:0;
 	}
 
 	#app {
@@ -93,5 +96,21 @@ export default {
 			"header header"
 			"content content"
 			"footer footer";
+	}
+
+	::-webkit-scrollbar {
+		width: 10px;
+	}
+
+	::-webkit-scrollbar-track {
+		background: #f1f1f1;
+	}
+
+	::-webkit-scrollbar-thumb {
+		background: #888;
+	}
+
+	::-webkit-scrollbar-thumb:hover {
+		background: #555;
 	}
 </style>

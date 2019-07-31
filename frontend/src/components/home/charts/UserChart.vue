@@ -1,43 +1,64 @@
 <template>
 	<div>
-		<b-card>
-			<b-form-row id="indicator">
-				<div class="rcol-12 col-md-3">
-					<b-form-group label="Data de:" label-for="search-data-of">
-						<b-form-input
-							id="search-data-of" 
-							type="date"
-							v-model="search.dataDe" />
-					</b-form-group>
-				</div>
-				<div class="rcol-12 col-md-3">
-					<b-form-group label="Até:" label-for="search-data-until">
-						<b-form-input
-							id="search-data-until" 
-							type="date"
-							v-model="search.dataAte" />
-					</b-form-group>
-				</div>
-				<div class="rcol-12 col-md-2" id="search-buttons">
-					<b-button variant="danger" class="mr-1" @click="resetSearch">
-						<i class="fa fa-remove"></i>
-					</b-button>
-					<b-button variant="primary" @click="loadData">
-						<i class="fa fa-search"></i>
-					</b-button>
-				</div>
-			</b-form-row>
-		</b-card>
-
-		<br>
-
-		<b-card-group deck>
+		<b-button
+			id="search-charts-button"
+			@click="toggleCollapse"
+			variant="dark"
+			v-b-toggle.accordion>
+				Pesquisa
+			<i class="fa fa-lg" :class="icon"></i>
+		</b-button>
+		<b-tooltip ref="tooltip" target="search-charts-button" placement="bottomright">
+			Pesquisar período
+		</b-tooltip>
+		<div class="pt-2">
+			<b-collapse id="accordion" accordion="my-accordion" role="tabpanel">
+				<b-card-group deck>
+					<b-card footer-tag="footer">
+						<b-form-row id="indicator">
+							<div class="rcol-12 col-md-6">
+								<b-form-group label="Data de:" label-for="search-data-of">
+									<b-form-input
+										id="search-data-of"
+										type="date"
+										v-model="search.dataDe" />
+								</b-form-group>
+							</div>
+							<div class="rcol-12 col-md-6">
+								<b-form-group label="Até:" label-for="search-data-until">
+									<b-form-input
+										id="search-data-until"
+										type="date"
+										v-model="search.dataAte" />
+								</b-form-group>
+							</div>
+						</b-form-row>
+						<div slot="footer" class="float-right">
+							<b-button
+								variant="light"
+								class="mr-1"
+								@click="resetSearch">
+								<i class="fa fa-remove"></i>
+								Limpar
+							</b-button>
+							<b-button
+								variant="primary"
+								@click="loadData">
+								<i class="fa fa-search"></i>
+								Pesquisar
+							</b-button>
+						</div>
+					</b-card>
+				</b-card-group>
+			</b-collapse>
+		</div>
+		<b-card-group class="pt-4" deck>
 			<b-card>
-				<h3>Total de horas por tipo de atividade</h3>
+				<h4 style="text-align:center">Total de horas por tipo de atividade</h4>
 				<apexchart type="bar" :options="chartBarOptions" :series="barSeries"></apexchart>
 			</b-card>
 			<b-card>
-				<h3>Percentual de horas por tipo de atividade</h3>
+				<h4 style="text-align:center">Percentual de horas por tipo de atividade</h4>
 				<apexchart type="donut" :options="chartDonutOptions" :series="donutSeries"></apexchart>
 			</b-card>
 		</b-card-group>
@@ -48,50 +69,49 @@
 import axios from 'axios'
 import { baseApiUrl, userKey } from '@/global'
 import moment from 'moment'
+import { minutesToHours, formatterTooltip, percentualPerActivity } from '../../utils'
+
+let totalHours = null;
 
 const initialSearch = {
     dataDe: moment().startOf('month').format('YYYY-MM-DD'),
     dataAte: moment().endOf('month').format('YYYY-MM-DD')
 }
 
-function formatterTooltip(val) {
-	if (val) {
-		let hours = val.toString().split('.')[0]
-		let minutes = val.toString().split('.')[1]
-		if (minutes && minutes !== '00') {
-			if (minutes.length === 1) {
-				minutes = minutes + "0"
-			}
-			return hours + "h" + minutes + "min"
-		}
-		return hours + "h"
-	}
-	return ""
-}
-
 const defaultText = 'Nenhum dado para ser exibido'
 
 export default {
-	name: 'Charts',
+	name: 'UserChart',
 	data: function() {
 		return {
 			search : { ...initialSearch },
 			chartSerieName: [],
-
 			// Bar Chart
 			chartBarOptions: {
 				plotOptions: {
 					bar: {
 						horizontal: false,
-						columnWidth: '60%',
+						distributed: true,
+						dataLabels: {
+							position: 'top',
+						},
 					},
 				},
 				dataLabels: {
-					enabled: false
+					enabled: true,
+					offsetY: -20,
+					formatter: function(val) {
+						return formatterTooltip(val)
+					},
+					hideOverflowingLabels: false,
+					style: {
+						fontSize: '12px',
+						colors: ["#304758"]
+					}
 				},
 				stroke: {
 					show: true,
-					width: 2,
+					width: 6,
 					colors: ['transparent']
 				},
 				xaxis: {
@@ -124,11 +144,14 @@ export default {
 				labels: [],
 				legend: {
 					position: 'left',
+					formatter: function(val, serie) {
+						return percentualPerActivity(val, serie, totalHours)
+					}
 				},
 				tooltip: {
 					y: {
 						formatter: function(val) {
-							return formatterTooltip(val)
+							return minutesToHours(val)
 						}
 					}
 				},
@@ -139,24 +162,30 @@ export default {
 				},
 				plotOptions: {
 					pie: {
+						expandOnClick: true,
+						dataLabels: {
+							offset: 0,
+							minAngleToShowLabel: 4
+						},
 						donut: {
 							labels: {
 								show: true,
 								name: {
-									show: true
+									show: true,
+									color: '#304758',
 								},
 								value: {
 									show: true,
 									formatter: function(val) {
-										return formatterTooltip(val)
+										return minutesToHours(val)
 									}
 								},
-								// total: {
-								// 	show: true,
-								// 	formatter: function(w) {
-								// 		return w
-								// 	}
-								// }
+								total: {
+									show: true,
+									formatter: function() {
+										return minutesToHours(totalHours)
+									}
+								}
 							}
 						}
 					}
@@ -172,7 +201,10 @@ export default {
 			const json = localStorage.getItem(userKey)
 			// Transforma o json em objeto
 			return JSON.parse(json)
-		}
+		},
+		icon() {
+            return this.$store.state.isCollapseVisible ? "fa-angle-up" : "fa-angle-down"
+        }
 	},
 	methods: {
 		loadData() {
@@ -184,15 +216,18 @@ export default {
 				this.chartBarData = []
 				// Clean the data of Donut Chart
 				this.chartDonutData = [0]
+				// Clean the total hour variable
+				totalHours = 0
 
 				if (res.data && res.data.result && res.data.result.length > 0) {
 					this.chartSerieName = []
 					this.chartDonutData = []
-					
+
 					res.data.result.forEach((element) => {
 						this.chartSerieName.push(element.name)
-						this.chartBarData.push(element.data)
-						this.chartDonutData.push(Number.parseFloat(element.data))
+						this.chartBarData.push(minutesToHours(element.minutes, false))
+						this.chartDonutData.push(Number.parseFloat(element.minutes))
+						totalHours += Number.parseFloat(element.minutes)
 					});
 				}
 				this.chartBarOptions = {  xaxis: {  categories: this.chartSerieName  }}
@@ -204,7 +239,10 @@ export default {
 		},
 		resetSearch() {
             this.search = { ...initialSearch }
-        }
+		},
+		toggleCollapse() {
+            this.$store.commit('toggleCollapse')
+        },
 	},
 	mounted() {
 		this.loadData();
@@ -213,6 +251,10 @@ export default {
 </script>
 
 <style>
+
+.template {
+	height: 100%;
+}
 
 .template-view {
 	display: flex;

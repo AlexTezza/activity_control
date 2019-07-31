@@ -3,6 +3,7 @@
 module.exports = app => {
     const { existsOrError, notExistsOrError, objectContainsIdOrErro, validateHourStartEnd, validateTask } = app.api.validation
     const {generalSync, removeSync} = app.api.syncRedmine;
+    const { formatterMinutesToHours } = app.api.utils
 
     const save = async (req, res) => {
         const atividade = { ...req.body }
@@ -264,18 +265,7 @@ module.exports = app => {
             .first()
 
         if (result.sum) {
-            let totalMinutes = result.sum
-            let hours = Math.trunc(totalMinutes / 60)
-            let minutes = totalMinutes % 60
-
-            if (hours < 10) {
-                hours = `0${hours}`
-            }
-            if (minutes < 10) {
-                minutes = `0${minutes}`
-            }
-
-            return `${hours}:${minutes}`
+            return formatterMinutesToHours(result.sum)
         }
         return 0
     }

@@ -3,9 +3,11 @@
         <a class="toggle" @click="toggleMenu" v-if="!hideToggle">
             <i class="fa fa-lg" :class="icon"></i>
         </a>
-        <h1 class="title">
-            <router-link to="/">{{ title }}</router-link>
-        </h1>
+        <div class="myTimeLogo" v-if="!hideLogo">
+            <router-link to="/">
+                <img src="@/assets/myTimeLogo.png" width="130px" alt="myTime" />
+            </router-link>
+        </div>
         <UserDropdown v-if="!hideUserDropdown" />
     </header>
 </template>
@@ -17,13 +19,13 @@ export default {
     name: 'Header',
     components: { UserDropdown },
     props: {
-        title: String,
         hideToggle: Boolean,
-        hideUserDropdown: Boolean
+        hideUserDropdown: Boolean,
+        hideLogo: Boolean,
     },
     computed: {
         icon() {
-            return this.$store.state.isMenuVisible ? "fa-angle-left" : "fa-angle-right"
+            return this.$store.state.isMenuVisible ? "fa-angle-left" : "fa-bars"
         }
     },
     methods: {
@@ -37,29 +39,20 @@ export default {
 <style>
     .header {
         grid-area: header;
-        background: linear-gradient(to right, #1e469a, #4474b3);
-
+        background: rgb(15, 56, 89);
         display: flex;
         justify-content: center;
         align-items: center;
     }
 
-    .title {
-        font-size: 1.2rem;
-        color: #fff;
-        font-weight: 100;
+    .myTimeLogo {
+        padding-left: 15px;
         flex-grow: 1;
-        text-align: center;
     }
 
-    .title a {
-        color: #FFF;
-        text-decoration: none;
-    }
-
-    .title a:hover {
-        color: #FFF;
-        text-decoration: none;
+    .division {
+        height: 60px;
+        border-right: 1px solid rgba(255,255,255,.3);
     }
 
     header.header > a.toggle {
@@ -68,14 +61,15 @@ export default {
         color: #fff;
         justify-self: flex-start;
         text-decoration: none;
-
         display: flex;
         justify-content: center;
         align-items: center;
+        border-right: 1px solid rgba(255,255,255,.3);
     }
 
     header.header > a.toggle:hover {
         color: #fff;
         background-color: rgba(0, 0, 0, 0.2);
+        cursor: pointer;
     }
 </style>

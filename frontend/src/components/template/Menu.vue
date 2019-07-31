@@ -2,7 +2,7 @@
     <aside class="menu-area" v-show="isMenuVisible">
         <nav class="menu">
             <router-link class="menu-item" to="/">
-                <i class="fa fa"> Inicio </i>
+                <i class="fa fa"> Dashboard </i>
             </router-link>
             <router-link class="menu-item" to="/atividade">
                 <i class="fa fa"> Atividades </i>
@@ -44,7 +44,7 @@ export default {
         display: block;
         text-decoration: none;
         color: #FFF;
-        padding: 15px;
+        padding: 12px;
     }
 
     .menu-item {
@@ -52,7 +52,7 @@ export default {
     }
 
     .menu a i {
-        font-size: 1.2rem;
+        font-size: 1.12rem;
         font-weight: 400;
         font-family: "Lato", sans-serif;
     }
@@ -63,4 +63,9 @@ export default {
         font-weight: 600;
     }
 
+    .router-link-exact-active.menu-item{
+        background: rgb(65, 65, 65);
+        color: #FFF;
+        font-weight: 600;
+    }
 </style>
