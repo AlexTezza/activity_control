@@ -1,7 +1,8 @@
 <template>
     <div class="redmine-form">
-        <PageTitle icon="" main=""
-            sub="Cadastro e integração com Redmine" />
+        <label style="font-weight:bold">
+            Cadastro e integração com Redmine
+        </label>
         <b-form>
             <b-form-checkbox id="redmine-active" v-model="redmine.active"
                 class="mt-3 mb-3" >

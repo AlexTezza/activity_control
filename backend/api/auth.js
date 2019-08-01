@@ -12,6 +12,10 @@ module.exports = app => {
             .where({ email: req.body.email})
             .first()
 
+        const {url} = await app.db('redmine')
+            .where({ id: usuario.redmineId})
+            .first()
+
         if (!usuario) return res.status(400).send('Usuário não encontrado!')
 
         const isMatch = bcrypt.compareSync(req.body.senha, usuario.senha)
@@ -25,6 +29,7 @@ module.exports = app => {
             email: usuario.email,
             admin: usuario.admin,
             redmineId: usuario.redmineId,
+            redmineUrl: url,
             redmineApiKey: usuario.redmineApiKey,
             redmineAllowSync: usuario.redmineAllowSync,
             iat: now,

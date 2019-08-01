@@ -40,9 +40,10 @@ module.exports = app => {
         const {redmineTaskId, idUsuario} = atividade;
         const redmine = await getRedmineApiInstance(idUsuario);
 
-        return redmine.delete_time_entry(redmineTaskId, (error, data) => {
-            if (error) {
-                return res.status(200).send(getRedmineErrorMessage(error));
+        return redmine.delete_time_entry(redmineTaskId, (error = null, data) => {
+            const removeError = JSON.parse(error);
+            if (removeError && removeError.ErrorCode !== 404) {
+                return res.status(500).send(getRedmineErrorMessage(error));
             }
             clearSyncPendency(atividade);
             return res.status(200).send();
@@ -61,9 +62,10 @@ module.exports = app => {
         const redmine = await getRedmineApiInstance(idUsuario);
         const time_entry = await getTimeEntry(atividade, redmineId);
 
-        return redmine.create_time_entry(time_entry, (createError, data) => {
+        return redmine.create_time_entry(time_entry, (error = null, data) => {
+            const createError = JSON.parse(error);
             if (createError) {
-                return res.status(500).send(getRedmineErrorMessage(createError));
+                return res.status(500).send(getRedmineErrorMessage(error));
             }
             clearSyncPendency(atividade);
             return updateRedmineTaskId(data.time_entry.id, idAtividade, res);
@@ -82,9 +84,10 @@ module.exports = app => {
         const redmine = await getRedmineApiInstance(idUsuario);
         const time_entry = await getTimeEntry(atividade, redmineId);
 
-        return redmine.update_time_entry(redmineTaskId, time_entry, (updateError, data) => {
+        return redmine.update_time_entry(redmineTaskId, time_entry, (error = null, data) => {
+            const updateError = JSON.parse(error);
             if (updateError) {
-                return res.status(500).send(getRedmineErrorMessage(updateError));
+                return res.status(500).send(getRedmineErrorMessage(error));
             }
             clearSyncPendency(atividade);
             return res.status(201).send();
@@ -104,12 +107,15 @@ module.exports = app => {
         const redmine = await getRedmineApiInstance(idUsuario);
         const time_entry = await getTimeEntry(atividade, redmineId);
 
-        return redmine.delete_time_entry(redmineTaskId, (removeError, data) => {
-            if (removeError) {
+        return redmine.delete_time_entry(redmineTaskId, (removeError = null) => {
+            const objRemoveError = JSON.parse(removeError);
+
+            if (objRemoveError && objRemoveError.ErrorCode !== 404) {
                 return res.status(500).send(getRedmineErrorMessage(removeError));
             }
-            return redmine.create_time_entry(time_entry, (createError, data) => {
-                if (createError) {
+            return redmine.create_time_entry(time_entry, (createError = null, data) => {
+                const objCreateError = JSON.parse(createError);
+                if (objCreateError) {
                     return res.status(500).send(getRedmineErrorMessage(createError));
                 }
                 clearSyncPendency(atividade);
@@ -150,20 +156,23 @@ module.exports = app => {
 
         switch(action) {
             case INSERT:
-                return redmine.create_time_entry(time_entry, (createError, data) => {
-                    if (createError) {
+                return redmine.create_time_entry(time_entry, (createError = null, data) => {
+                    const objCreateError = JSON.parse(createError);
+                    if (objCreateError) {
                         return res.status(200).send(getRedmineErrorMessage(createError));
                     }
                     return updateRedmineTaskId(data.time_entry.id, idAtividade, res);
                 });
 
             case REPLACE:
-                return redmine.delete_time_entry(redmineTaskId, (removeError, data) => {
-                    if (removeError) {
+                return redmine.delete_time_entry(redmineTaskId, (removeError = null, data) => {
+                    const objRemoveError = JSON.parse(removeError);
+                    if (objRemoveError) {
                         return res.status(500).send(getRedmineErrorMessage(removeError));
                     }
-                    return redmine.create_time_entry(time_entry, (createError, data) => {
-                        if (createError) {
+                    return redmine.create_time_entry(time_entry, (createError = null, data) => {
+                        const objCreateError = JSON.parse(createError);
+                        if (objCreateError) {
                             return res.status(500).send(getRedmineErrorMessage(createError));
                         }
 
@@ -172,7 +181,7 @@ module.exports = app => {
                 });
 
             case UPDATE:
-                return redmine.update_time_entry(redmineTaskId, time_entry, (updateError, data) => {
+                return redmine.update_time_entry(redmineTaskId, time_entry, (updateError = null) => {
                     if (updateError) {
                         return res.status(500).send(getRedmineErrorMessage(updateError));
                     }
@@ -180,7 +189,7 @@ module.exports = app => {
                 });
 
             case REMOVE:
-                return redmine.delete_time_entry(redmineTaskId, (removeError, data) => {
+                return redmine.delete_time_entry(redmineTaskId, (removeError = null) => {
                     if (removeError) {
                         return res.status(500).send(getRedmineErrorMessage(removeError));
                     }
@@ -347,8 +356,16 @@ module.exports = app => {
 
             if (message.indexOf('Unprocessable Entity') >= 0) {
                 if (errorObject.Detail.errors.indexOf('Tarefa não é válido') >= 0) {
-                    return 'Task do Redmine inválida!';
+                    return 'Tarefa do Redmine inválida! Verifique se ela existe ou se possui permissão para lançar horas';
                 }
+                if (errorObject.Detail.errors.indexOf('Atividade não pode ficar vazio') >= 0) {
+                    return 'Problema ao sincronizar com o Redmine, verificar "de-para" de tipos de atividade no modo Administrador';
+                }
+                return error;
+            }
+
+            if (message.indexOf('Unauthorized') >= 0) {
+                return 'Sincronização não autorizada, verifique se sua chave do redmine é válida';
             }
 
             return message;

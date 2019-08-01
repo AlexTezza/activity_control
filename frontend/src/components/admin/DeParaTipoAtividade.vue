@@ -1,9 +1,12 @@
 <template>
     <div class="deparatipoatividade-form">
-        <PageTitle icon="" main=""
-            sub="De-Para entre tipos de atividade local e do Redmine" />
-        <b-form>
+        <label style="font-weight:bold">
+            De-Para entre tipos de atividade local e do Redmine
+        </label>
+        <br/>
+        <br/>
 
+        <b-form>
             <b-form-group label="Redmine:" label-for="select-redmine">
                 <b-form-select
                     id="select-redmine"
@@ -17,7 +20,9 @@
 
             <b-container v-if="redmineId" class="bv-example-row">
                 <b-row v-for="(tipoAtividade, index) in tipoAtividadeArray" v-bind:key="index" :id=index>
-                    <b-col class="bcol rcol-12 col-md-3"><span class="tipoAtividade">{{tipoAtividade.descricao}}</span></b-col>
+                    <b-col class="bcol rcol-12 col-md-3">
+                        <span class="tipoAtividade">{{tipoAtividade.descricao}}</span>
+                    </b-col>
                     <b-col class="rcol-12 col-md-4">
                         <b-form-select
                             :options="redmineActivities"
@@ -31,7 +36,7 @@
                     </b-col>
                 </b-row>
             </b-container>
-
+            <br/>
             <b-row>
                 <b-col xl="12">
                     <b-button variant="primary" @click="save">Salvar</b-button>
