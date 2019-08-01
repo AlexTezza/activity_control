@@ -113,7 +113,11 @@
             </div>
             <div class="pt-4 col-12">
                 <b-table :items=atividades :fields=fields hover striped responsive small outlined>
-                    <template slot="editar" slot-scope="data">
+                    <template v-if="data && data.item && data.item.tarefa" slot="tarefa" slot-scope="data">
+                        <a :href="getTaskUrl(data.item.tarefa)">{{data.item.tarefa}}</a>
+                    </template>
+
+                    <template class="edit-column" slot="editar" slot-scope="data">
                         <b-button
                             variant="outline-primary"
                             @click="loadAtividade(data.item)"
@@ -122,7 +126,7 @@
                             <i class="fa fa-pencil"></i>
                         </b-button>
                     </template>
-                    <template slot="remover" slot-scope="data">
+                    <template class="remove-column" slot="remover" slot-scope="data">
                         <b-button
                             variant="outline-danger"
                             @click="loadAtividade(data.item, 'remove')"
@@ -163,12 +167,13 @@
                             class="mr-2">
                             <i class="fa fa-exchange"></i>
                         </b-button>
-                        <i id="sync-check"
-                            v-b-tooltip.hover
+                        <b-button disabled v-b-tooltip.hover
                             title="Sincronizado"
-                            class="fa fa-check"
-                            v-if="!data.item.redmineSyncPendency && data.item.tarefa && data.item.redmineTaskId">
-                        </i>
+                            v-if="!data.item.redmineSyncPendency && data.item.tarefa && data.item.redmineTaskId"
+                            variant="outline-success"
+                            class="mr-2">
+                            <i class="fa fa-check"></i>
+                        </b-button>
                     </template>
                 </b-table>
                 <b-pagination size="md" v-model="page" :total-rows="count" :per-page="limit"></b-pagination>
@@ -381,12 +386,12 @@ export default {
                 { key: 'horaFim', label: 'Hora fim', sortable: true },
                 { key: 'duracao', label: 'Duração', sortable: true,
                     formatter: value => `${value} minuto(s)` },
-                { key: 'editar', label: 'Editar', class: 'text-center' },
-                { key: 'remover', label: 'Remover', class: 'text-center' },
+                { key: 'editar', label: 'Editar', class: 'text-center min-col-width' },
+                { key: 'remover', label: 'Remover', class: 'text-center min-col-width' },
             ];
 
             if (this.usuarioLogado.redmineApiKey) {
-                array.push({ key: 'sync', label: 'Redmine' });
+                array.push({ key: 'sync', label: 'Redmine', class: 'text-center min-col-width' });
             }
 
             this.fields = array;
@@ -403,6 +408,14 @@ export default {
             this.showModal()
             this.mode = mode
             this.atividade = { ...atividade }
+        },
+        getTaskUrl(task) {
+            console.log(this.usuarioLogado.redmineUrl);
+            return `https://redmineprojetos.wssim.com.br/issues/${task}`;
+            if (this.usuarioLogado.redmineUrl) {
+                return `${this.usuarioLogado.redmineUrl}/issues/${task}`;
+            }
+            return "";
         },
         save(saveAndContinue = false) {
             const method = this.atividade.id ? 'put' : 'post'
@@ -583,6 +596,10 @@ export default {
     #sync-check {
         color: green;
         font-size: large;
+    }
+
+    .min-col-width {
+        width: 75px;
     }
 
 </style>

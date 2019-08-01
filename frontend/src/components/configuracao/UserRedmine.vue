@@ -1,7 +1,10 @@
 <template>
     <div class="redmine-form">
-        <PageTitle icon="" main=""
-            sub="Configurações para integração com o Redmine" />
+        <label style="font-weight:bold">
+            Configurações para integração com o Redmine
+        </label>
+        <br/>
+        <br/>
         <div class="redmine-form-cadastro">
             <b-form-row>
                 <div class="col-12 col-md-12">
@@ -15,6 +18,8 @@
                                 <option first :value="null">-- Selecione --</option>
                             </template>
                         </b-form-select>
+                        <i class="infoIcon fa fa-info-circle"></i>
+                        <span class="obs">A troca do Redmine acarretará em problemas de sincronização caso deseje modificar tarefas já sincronizadas!</Span>
                     </b-form-group>
                 </div>
 
