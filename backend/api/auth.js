@@ -12,7 +12,7 @@ module.exports = app => {
             .where({ email: req.body.email})
             .first()
 
-        const {url} = await app.db('redmine')
+        const redmine = await app.db('redmine')
             .where({ id: usuario.redmineId})
             .first()
 
@@ -29,7 +29,7 @@ module.exports = app => {
             email: usuario.email,
             admin: usuario.admin,
             redmineId: usuario.redmineId,
-            redmineUrl: url,
+            redmineUrl: redmine && redmine.url,
             redmineApiKey: usuario.redmineApiKey,
             redmineAllowSync: usuario.redmineAllowSync,
             iat: now,
