@@ -22,6 +22,12 @@
                     <b-tab title="Tipo atividade">
                         <TipoAtividade />
                     </b-tab>
+                    <b-tab title="Redmine">
+                        <Redmine />
+                    </b-tab>
+                    <b-tab title="Tipo atividade <-> Redmine">
+                        <DeParaTipoAtividade />
+                    </b-tab>
                 </b-tabs>
             </b-card>
         </div>
@@ -35,10 +41,12 @@ import Departamento from './Departamento'
 import Funcao from './Funcao'
 import TipoAtividade from './TipoAtividade'
 import UsuarioDepartamento from './UsuarioDepartamento'
+import Redmine from './Redmine'
+import DeParaTipoAtividade from './DeParaTipoAtividade'
 
 export default {
     name: 'AdminPages',
-    components: { PageTitle, Departamento, Usuario, Funcao, TipoAtividade, UsuarioDepartamento }
+    components: { PageTitle, Departamento, Usuario, Funcao, TipoAtividade, UsuarioDepartamento, Redmine, DeParaTipoAtividade}
 }
 </script>
 
