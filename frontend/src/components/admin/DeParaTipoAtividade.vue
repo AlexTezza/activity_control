@@ -69,9 +69,9 @@ export default {
     },
     methods: {
         loadTiposAtividade() {
-            const url = `${baseApiUrl}/tipoAtividade`;
+            const url = `${baseApiUrl}/getAll/tipoAtividade/`
             axios.get(url).then(res => {
-                this.tipoAtividadeArray = res.data.data;
+                this.tipoAtividadeArray = res.data
             })
         },
         loadRedmines() {
