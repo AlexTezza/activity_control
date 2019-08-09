@@ -113,7 +113,11 @@
             </div>
             <div class="pt-4 col-12">
                 <b-table :items=atividades :fields=fields hover striped responsive small outlined>
-                    <template slot="editar" slot-scope="data">
+                    <template v-if="data && data.item && data.item.tarefa" slot="tarefa" slot-scope="data">
+                        <a :href="getTaskUrl(data.item.tarefa)">{{data.item.tarefa}}</a>
+                    </template>
+
+                    <template class="edit-column" slot="editar" slot-scope="data">
                         <b-button
                             variant="outline-primary"
                             @click="loadAtividade(data.item)"
@@ -122,12 +126,53 @@
                             <i class="fa fa-pencil"></i>
                         </b-button>
                     </template>
-                    <template slot="remover" slot-scope="data">
+                    <template class="remove-column" slot="remover" slot-scope="data">
                         <b-button
                             variant="outline-danger"
                             @click="loadAtividade(data.item, 'remove')"
                             v-b-tooltip.hover title="Remover atividade">
                             <i class="fa fa-trash"></i>
+                        </b-button>
+                    </template>
+                    <template class="sync-column" slot="sync" slot-scope="data">
+                        <b-button v-b-tooltip.hover
+                            title="Lançar nova atividade no Redmine"
+                            v-if="data.item.redmineSyncPendency === 'insert' || (!data.item.redmineSyncPendency && data.item.tarefa && !data.item.redmineTaskId)"
+                            variant="outline-success"
+                            @click="saveInRedmine(data.item, 'insert')"
+                            class="mr-2">
+                            <i class="fa fa-paper-plane"></i>
+                        </b-button>
+                        <b-button v-b-tooltip.hover
+                            title="Atualizar atividade no Redmine"
+                            v-if="data.item.redmineSyncPendency === 'update'"
+                            variant="outline-success"
+                            @click="saveInRedmine(data.item, 'update')"
+                            class="mr-2">
+                            <i class="fa fa-retweet"></i>
+                        </b-button>
+                        <b-button v-b-tooltip.hover
+                            title="Remover este lançamento do Redmine"
+                            v-if="data.item.redmineSyncPendency === 'remove'"
+                            variant="outline-success"
+                            @click="saveInRedmine(data.item, 'remove')"
+                            class="mr-2">
+                            <i class="fa fa-trash"></i>
+                        </b-button>
+                        <b-button v-b-tooltip.hover
+                            title="Remover atividade de uma tarefa antiga e lançar em uma nova tarefa no Redmine"
+                            v-if="data.item.redmineSyncPendency === 'replace'"
+                            variant="outline-success"
+                            @click="saveInRedmine(data.item, 'replace')"
+                            class="mr-2">
+                            <i class="fa fa-exchange"></i>
+                        </b-button>
+                        <b-button disabled v-b-tooltip.hover
+                            title="Sincronizado"
+                            v-if="!data.item.redmineSyncPendency && data.item.tarefa && data.item.redmineTaskId"
+                            variant="outline-success"
+                            class="mr-2">
+                            <i class="fa fa-check"></i>
                         </b-button>
                     </template>
                 </b-table>
@@ -311,23 +356,7 @@ export default {
             page: 1,
             limit: 0,
             count: 0,
-            fields: [
-                { key: 'tarefa', label: 'Task', sortable: true },
-                { key: 'descricao', label: 'Descrição', sortable: true },
-                { key: 'tipoAtividade.descricao', label: 'Tipo atividade', sortable: true },
-                { key: 'data', label: 'Data', sortable: true,
-                    formatter: value => {
-                        value = value.split("-", 3)
-                        return `${value[2]}/${value[1]}/${value[0]}`
-                    }
-                },
-                { key: 'horaInicio', label: 'Hora início', sortable: true },
-                { key: 'horaFim', label: 'Hora fim', sortable: true },
-                { key: 'duracao', label: 'Duração', sortable: true,
-                    formatter: value => `${value} minuto(s)` },
-                { key: 'editar', label: 'Editar', class: 'text-center' },
-                { key: 'remover', label: 'Remover', class: 'text-center' },
-            ]
+            fields: []
         }
     },
     computed: {
@@ -342,6 +371,31 @@ export default {
         }
     },
     methods: {
+        setGridColumns() {
+            let array = [
+                { key: 'tarefa', label: 'Task', sortable: true },
+                { key: 'descricao', label: 'Descrição', sortable: true },
+                { key: 'tipoAtividade.descricao', label: 'Tipo atividade', sortable: true },
+                { key: 'data', label: 'Data', sortable: true,
+                    formatter: value => {
+                        value = value.split("-", 3)
+                        return `${value[2]}/${value[1]}/${value[0]}`
+                    }
+                },
+                { key: 'horaInicio', label: 'Hora início', sortable: true },
+                { key: 'horaFim', label: 'Hora fim', sortable: true },
+                { key: 'duracao', label: 'Duração', sortable: true,
+                    formatter: value => `${value} minuto(s)` },
+                { key: 'editar', label: 'Editar', class: 'text-center min-col-width' },
+                { key: 'remover', label: 'Remover', class: 'text-center min-col-width' },
+            ];
+
+            if (this.usuarioLogado.redmineApiKey) {
+                array.push({ key: 'sync', label: 'Redmine', class: 'text-center min-col-width' });
+            }
+
+            this.fields = array;
+        },
         loadAtividades() {
             const url = `${baseApiUrl}/atividade?page=${this.page}&usuario=${this.usuarioLogado.id}`
             axios.get(url).then(res => {
@@ -354,6 +408,14 @@ export default {
             this.showModal()
             this.mode = mode
             this.atividade = { ...atividade }
+        },
+        getTaskUrl(task) {
+            console.log(this.usuarioLogado.redmineUrl);
+            return `https://redmineprojetos.wssim.com.br/issues/${task}`;
+            if (this.usuarioLogado.redmineUrl) {
+                return `${this.usuarioLogado.redmineUrl}/issues/${task}`;
+            }
+            return "";
         },
         save(saveAndContinue = false) {
             const method = this.atividade.id ? 'put' : 'post'
@@ -372,6 +434,12 @@ export default {
         },
         play(saveAndContinue = false) {
 
+        },
+        saveInRedmine(item, operation) {
+            return axios.post(`${baseApiUrl}/redmine/sync/${operation}`, item).then(() => {
+                this.$toasted.global.defaultSuccess();
+                this.reset()
+            }).catch(showError)
         },
         remove() {
             const id = this.atividade.id
@@ -512,7 +580,8 @@ export default {
         this.loadAtividades()
         this.loadFunctions()
         this.loadTipoAtividades()
-    },
+        this.setGridColumns()
+    }
 }
 </script>
 
@@ -526,4 +595,14 @@ export default {
     #search-buttons {
         padding-top: 31px;
     }
+
+    #sync-check {
+        color: green;
+        font-size: large;
+    }
+
+    .min-col-width {
+        width: 75px;
+    }
+
 </style>

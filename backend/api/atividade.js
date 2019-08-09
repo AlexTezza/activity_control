@@ -1,5 +1,8 @@
-﻿module.exports = app => {
+﻿const Redmine = require('node-redmine');
+
+module.exports = app => {
     const { existsOrError, notExistsOrError, objectContainsIdOrErro, validateHourStartEnd, validateTask } = app.api.validation
+    const {generalSync, removeSync} = app.api.syncRedmine;
     const { formatterMinutesToHours } = app.api.utils
 
     const save = async (req, res) => {
@@ -42,23 +45,40 @@
         }
 
         if (atividade.id) {
+            const oldDbAtividade = await app.db('atividade').where({id: atividade.id}).first();
+
             app.db('atividade')
-            .update(atividade)
-            .where({ id: atividade.id })
-            .then(_ => res.status(204).send())
-            .catch(err => res.status(500).send(err))
+                .update(atividade)
+                .where({ id: atividade.id })
+                .then(() => generalSync(oldDbAtividade, atividade, res))
+                .catch(err => {
+                    return res.status(500).send(err);
+                });
         } else {
             app.db('atividade')
                 .insert(atividade)
-                .then(_ => res.status(204).send())
-                .catch(err => res.status(500).send(err))
+                .returning('id')
+                .then(id => {
+                    atividade.id = id[0];
+                    return generalSync(null, atividade, res);
+                })
+                .catch(err => {
+                    return res.status(500).send(err);
+                });
         }
     }
 
     const remove = async (req, res) => {
+        const {id} = req.params;
+        const oldAtividade = await app.db('atividade')
+            .where({id})
+            .first()
+            .catch(err => res.status(500).send(err));
+
         try {
             const rowsDeleted = await app.db('atividade')
-                .where({ id: req.params.id }).del()
+                .where({id})
+                .del()
 
             try {
                 existsOrError(rowsDeleted, 'Tipo Atividade não foi encontrado.')
@@ -66,7 +86,7 @@
                 return res.status(400).send(msg)
             }
 
-            res.status(204).send()
+            return removeSync(oldAtividade, res);
         } catch(msg) {
             res.status(500).send(msg)
         }
@@ -81,7 +101,8 @@
         const count = await getGetCount(idUsuario)
 
         app.db({ a: 'atividade', ta: 'tipoAtividade' })
-            .select('a.id', 'a.idUsuario', 'a.horaInicio', 'a.horaFim', 'a.duracao', 'a.tarefa', 'a.descricao', 'a.data',
+            .select('a.id', 'a.idUsuario', 'a.horaInicio', 'a.horaFim', 'a.duracao', 'a.tarefa',
+                'a.descricao', 'a.data', 'a.redmineTaskId', 'a.redmineSyncPendency',
                 { idTipoAtividade: 'ta.id', tipoAtividadeDescricao: 'ta.descricao' } )
             .limit(limit).offset(page * limit - limit)
             .where({'a.idUsuario': idUsuario}) // Filtro por usuário
@@ -115,13 +136,13 @@
 
     const search = async (req, res) => {
         const page = req.params.page || 1
-
         const count = await getSearchCount(req)
-
         const amount = await getAmountDuracao(req)
 
         app.db({ a: 'atividade', ta: 'tipoAtividade' })
-            .select('a.id', 'a.idUsuario', 'a.horaInicio', 'a.horaFim', 'a.duracao', 'a.tarefa', 'a.descricao', 'a.data', { idTipoAtividade: 'ta.id', tipoAtividadeDescricao: 'ta.descricao' } )
+            .select('a.id', 'a.idUsuario', 'a.horaInicio', 'a.horaFim', 'a.duracao', 'a.tarefa',
+                    'a.descricao', 'a.data', 'a.redmineTaskId', 'a.redmineSyncPendency',
+                    { idTipoAtividade: 'ta.id', tipoAtividadeDescricao: 'ta.descricao' } )
             .modify(function(queryBuilder) {
                 if (req.params.idUsuario && req.params.idUsuario != 'null') {
                     queryBuilder.where({ 'a.idUsuario': req.params.idUsuario })

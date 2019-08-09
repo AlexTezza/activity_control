@@ -2,6 +2,7 @@ import Vue from 'vue'
 import VueRouter from 'vue-router'
 import Home from '@/components/home/Home'
 import Atividade from '@/components/atividade/Atividade'
+import Configuracao from '@/components/configuracao/Configuracao'
 import AdminPages from '@/components/admin/AdminPages'
 import Auth from '@/components/auth/Auth'
 import { userKey } from '@/global'
@@ -16,6 +17,11 @@ const routes = [{
     name: 'atividade',
     path: '/atividade',
     component: Atividade,
+    meta: { requiresAdmin: false }
+}, {
+    name: 'configuracao',
+    path: '/configuracao',
+    component: Configuracao,
     meta: { requiresAdmin: false }
 }, {
     name: 'adminPages',
