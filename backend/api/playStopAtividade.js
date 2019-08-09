@@ -1,5 +1,5 @@
 module.exports = app => {
-    const { existsOrError, objectContainsIdOrErro, validateHourStartEnd, validateTask } = app.api.validation
+    const { existsOrError, objectContainsIdOrErro, validateTask, notExistsOrError} = app.api.validation
 
     const save = async (req, res) => {
         const playStopAtividade = { ...req.body }
@@ -12,7 +12,6 @@ module.exports = app => {
             existsOrError(playStopAtividade.idUsuario, 'Usuário não informado')
             objectContainsIdOrErro(playStopAtividade.tipoAtividade, 'Tipo Atividade não informada')
             existsOrError(playStopAtividade.horaInicio, 'Hora início não informada')
-            validateHourStartEnd(playStopAtividade.horaInicio, playStopAtividade.horaFim, "A hora de Início não pode ser maior que a hora Fim")
             validateTask(playStopAtividade.tarefa, "O número informado no campo Task é inválido")
             existsOrError(playStopAtividade.descricao, 'Descrição não informada')
             existsOrError(playStopAtividade.data, 'Data não informada')
@@ -24,23 +23,26 @@ module.exports = app => {
                 playStopAtividade.tarefa = null
             }
 
-            const playStopAtividadeFromDB = await app.db('playStopAtividade')
-                .where({ data: playStopAtividade.data, idUsuario: playStopAtividade.idUsuario })
-                .where(function () {
-                    this
-                        .where({ horaInicio:  playStopAtividade.horaInicio})
-                        .orWhere({ horaFim: playStopAtividade.horaFim })
-                })
-                .first()
-            if(!playStopAtividade.id) {
-                notExistsOrError(playStopAtividadeFromDB, 'Hora Início/Fim já foi registrada em outra atividade')
+            if (playStopAtividade.horaFim) {
+                const playStopAtividadeFromDB = await app.db('playStopAtividade')
+                    .where({ data: playStopAtividade.data, idUsuario: playStopAtividade.idUsuario })
+                    .where(function () {
+                        this
+                            .where({ horaInicio: playStopAtividade.horaInicio})
+                            .orWhere({ horaFim: playStopAtividade.horaFim })
+                    })
+                    .first()
+
+                    if(!playStopAtividade.id) {
+                        notExistsOrError(playStopAtividadeFromDB, 'Hora Início/Fim já foi registrada em outra atividade')
+                    }
             }
 
         } catch (msg) {
             return res.status(400).send(msg)
         }
 
-        playStopAtividade.duracao = getDuracao(playStopAtividade);
+        playStopAtividade.duracao =  playStopAtividade.horaFim ? getDuracao(playStopAtividade) : 0;
 
         if (playStopAtividade.id && !playStopAtividade.horaFim) {
             app.db('playStopAtividade')
@@ -51,17 +53,16 @@ module.exports = app => {
         } else if (playStopAtividade.id && playStopAtividade.horaFim) {
             app.db.transaction(trx => {
                 return app.db('playStopAtividade')
-                .update(playStopAtividade)
-                .where({ id: playStopAtividade.id })
-                .then(() => {
-                    delete playStopAtividade.id
-                    return app.db('atividade').insert(playStopAtividade)
+                    .transacting(trx)
+                    .update(playStopAtividade)
+                    .where({ id: playStopAtividade.id })
+                    .then(() => {return validateInsertAtividade(playStopAtividade, res)})
+                    .catch(msg => res.status(400).send(msg))
+                    .then(trx.commit)
+                    .catch(trx.rollback)
                 })
-                .then(trx.commit)
-                .catch(trx.rollback)
-            })
             .then(_ => res.status(204).send())
-            .catch(err => res.status(500).send(err));
+            .catch(msg => res.status(400).send(msg));
         } else {
             app.db('playStopAtividade')
                 .insert(playStopAtividade)
@@ -70,13 +71,38 @@ module.exports = app => {
         }
     }
 
+    validateInsertAtividade = async (atividade, res) => {
+
+        if (atividade.id) {
+            delete atividade.id
+        }
+
+        const atividadeFromDB = await app.db('atividade')
+            .where({ data: atividade.data, idUsuario: atividade.idUsuario })
+            .where(function () {
+                this
+                    .where({ horaInicio:  atividade.horaInicio})
+                    .orWhere({ horaFim: atividade.horaFim })
+            })
+            .first()
+
+        if(!atividade.id) {
+            notExistsOrError(atividadeFromDB, 'Hora Início/Fim já foi registrada em outra atividade')
+        }
+
+        app.db('atividade')
+            .insert(atividade)
+            .then(_ => res.status(204).send())
+            .catch(err => res.status(500).send(err))
+    }
+
     const getDuracao = (atividade) => {
         let duracao = 0
 
         if (atividade.horaInicio !== "" && atividade.horaFim !== "") {
             const horaInicio = parseInt(atividade.horaInicio.split(':')[0])
             const minInicio = parseInt(atividade.horaInicio.split(':')[1])
-            const horaFim = parseInt(atividade.horaFim.split(':')[0])
+            const horaFim =  parseInt(atividade.horaFim.split(':')[0])
             const minFim = parseInt(atividade.horaFim.split(':')[1])
             const horaDiferanca = (horaFim - horaInicio) * 60
             const minDiferanca = minFim - minInicio

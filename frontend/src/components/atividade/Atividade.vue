@@ -10,6 +10,9 @@
             textButton="Adicionar"
             textTooltipButton="Adicionar atividade" />
         <div class="atividade-form-cadastro">
+            <div v-if="playStopHora">
+                {{playStopHora}}
+            </div>
             <div class="pb-2 col-12">
                 <b-button
                     id="search-activity-button"
@@ -278,6 +281,13 @@
                                         disabled />
                                 </b-form-group>
                             </div>
+                            <b-form-checkbox
+                                id="checkbox-playStop"
+                                v-model="checkBoxPlayStop"
+                                name="checkbox-playStop"
+                                @change="onChangeCheckboxPlayStop">
+                                Usar contagem de horas automática (play/stop)
+                            </b-form-checkbox>
                         </b-form-row>
                     </b-container>
                     <b-container class="pt-3" fluid>
@@ -289,11 +299,22 @@
                             </b-col>
                             <b-col>
                                 <div class="float-right">
-                                    <b-button variant="success" v-if="mode === 'save'" @click="save(saveAndContinue = true)">
+                                    <b-button
+                                        variant="success"
+                                        v-if="mode === 'save' && !checkBoxPlayStop"
+                                        @click="save(saveAndContinue = true)">
                                         Salvar e continuar
                                     </b-button>
-                                    <b-button class="ml-2" variant="primary" v-if="mode === 'save'" @click="save(saveAndContinue = false)">
+                                    <b-button
+                                        class="ml-2"
+                                        variant="primary"
+                                        v-if="mode === 'save' && !checkBoxPlayStop"
+                                        @click="save(saveAndContinue = false)">
                                         Salvar
+                                    </b-button>
+                                     <b-button variant="success" v-if="checkBoxPlayStop" @click="play">
+                                        <i class="fa fa-play"></i>
+                                        Play
                                     </b-button>
                                     <b-button variant="danger" v-if="mode === 'remove'" @click="remove">
                                         Excluir
@@ -326,7 +347,7 @@ const initialAtividade = {
     data: today,
     horaInicio: "00:00",
     horaFim: "00:00",
-    duracao: '0'
+    duracao: '0',
 }
 
 const initialSearch = {
@@ -356,7 +377,9 @@ export default {
             page: 1,
             limit: 0,
             count: 0,
-            fields: []
+            fields: [],
+            checkBoxPlayStop: false,
+            playStopHora: null,
         }
     },
     computed: {
@@ -410,7 +433,6 @@ export default {
             this.atividade = { ...atividade }
         },
         getTaskUrl(task) {
-            console.log(this.usuarioLogado.redmineUrl);
             return `https://redmineprojetos.wssim.com.br/issues/${task}`;
             if (this.usuarioLogado.redmineUrl) {
                 return `${this.usuarioLogado.redmineUrl}/issues/${task}`;
@@ -433,7 +455,40 @@ export default {
                 .catch(showError)
         },
         play(saveAndContinue = false) {
-
+            var today = moment();
+            const method = this.atividade.id ? 'put' : 'post';
+            const id = this.atividade.id ? `/${this.atividade.id}` : '';
+            this.atividade.idUsuario = this.usuarioLogado.id;
+            this.atividade.horaInicio = `${today.hour()}${today.minute()}`;
+            this.runTime()
+            ////////VERIFICAR MELHOR FORMA DE FAZER ESSA FUNCIONALIDADE
+            // axios[method](`${baseApiUrl}/playStopAtividade${id}`, this.atividade)
+            //     .then(() => {
+            //         this.$toasted.global.defaultSuccess();
+            //         this.hideModal();
+            //         this.runTime();
+            //     })
+            //     .catch(showError)
+        },
+        runTime() {
+            var today = moment()
+            var hora = today.hour();
+            var min = today.minute();
+            var seg = today.second();
+            min = this.checkTime(min);
+            seg = this.checkTime(seg);
+            this.playStopHora =`${hora}:${min}:${seg}`;
+            var t = setTimeout(this.runTime, 1000);
+            console.log(this.playStopHora)
+        },
+        checkTime(i) {
+            if (i < 10) {i = "0" + i};  // add zero in front of numbers < 10
+            return i;
+        },
+        onChangeCheckboxPlayStop() {
+            this.checkBoxPlayStop = !this.checkBoxPlayStop;
+            this.atividade.horaInicio = "";
+            this.atividade.horaFim = "";
         },
         saveInRedmine(item, operation) {
             return axios.post(`${baseApiUrl}/redmine/sync/${operation}`, item).then(() => {
