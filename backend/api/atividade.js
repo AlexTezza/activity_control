@@ -6,9 +6,9 @@ module.exports = app => {
     const { formatterMinutesToHours } = app.api.utils
 
     const save = async (req, res) => {
-        const atividade = { ...req.body }
+        const atividade = { ...req.body}
 
-        if (req.params.id) {
+        if (req.params && req.params.id) {
             atividade.id = req.params.id
         }
 

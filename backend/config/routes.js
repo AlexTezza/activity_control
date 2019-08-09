@@ -122,4 +122,12 @@ module.exports = app => {
     app.route('/colaborators-chart/:dateFrom/:dateUntil')
         .all(app.config.passport.authenticate())
         .get(admin(app.api.colaboratorsChart.getColaboratorsHourPerActivityType))
+
+    app.route('/playStopAtividade')
+        .all(app.config.passport.authenticate())
+        .post(app.api.playStopAtividade.save)
+
+    app.route('/playStopAtividade/:id')
+        .all(app.config.passport.authenticate())
+        .put(app.api.playStopAtividade.save)
 }
