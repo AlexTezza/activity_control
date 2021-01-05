@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "apexcharts": "3.8.0",
-    "axios": "0.18.0",
+    "axios": "0.21.1",
     "bootstrap-vue": "2.0.0-rc.19",
     "font-awesome": "4.7.0",
     "highlightjs": "9.10.0",
